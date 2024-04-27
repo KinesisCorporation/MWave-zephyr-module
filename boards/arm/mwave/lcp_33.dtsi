@@ -8,6 +8,8 @@
 
 #include <nordic/nrf52833_qiaa.dtsi>
 #include "mwave-pinctrl.dtsi"
+#include <dt-bindings/zmk/matrix_transform.h>
+
 
 / {
     model = "lcp";
