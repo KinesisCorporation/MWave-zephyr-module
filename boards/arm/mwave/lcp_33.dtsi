@@ -99,28 +99,16 @@
         #address-cells = <1>;
         #size-cells = <1>;
 
-        sd_partition: partition@0 {
-            reg = <0x00000000 0x00026000>;
-        };
-        code_partition: partition@26000 {
-            reg = <0x00026000 0x000c6000>;
+        code_partition: partition@0000 {
+            reg = <0x00000000 0x0006c000>;
         };
 
-        /*
-         * The flash starting at 0x000ec000 and ending at
-         * 0x000f3fff is reserved for use by the application.
-         */
-
-        /*
-         * Storage partition will be used by FCB/LittleFS/NVS
-         * if enabled.
-         */
-        storage_partition: partition@ec000 {
-            reg = <0x000ec000 0x00008000>;
+        storage_partition: partition@6c000 {
+            reg = <0x0006c000 0x00008000>;
         };
 
-        boot_partition: partition@f4000 {
-            reg = <0x000f4000 0x0000c000>;
+        boot_partition: partition@74000 {
+            reg = <0x00074000 0x0000c000>;
         };
     };
 };
