@@ -1,0 +1,20 @@
+# M-Wave board configuration
+
+# Copyright (c) 2024 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+config BOARD_MWAVE_33
+    bool "mwave_33"
+    depends on SOC_NRF52833_QIAA
+
+config BOARD_MWAVE_20
+    bool "mwave_20"
+    depends on SOC_NRF52820_QDAA
+
+config BOARD_MWAVETEST_33
+    bool "mwavetest_33"
+    depends on SOC_NRF52833_QIAA
+
+config BOARD_MWAVETEST_20
+    bool "mwavetest_20"
+    depends on SOC_NRF52820_QDAA
