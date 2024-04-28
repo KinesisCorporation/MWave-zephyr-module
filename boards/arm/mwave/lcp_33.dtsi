@@ -99,8 +99,11 @@
         #address-cells = <1>;
         #size-cells = <1>;
 
-        code_partition: partition@0000 {
-            reg = <0x00000000 0x0006c000>;
+        sd_partition: partition@0 {
+            reg = <0x00000000 0x0001000>;
+        };
+        code_partition: partition@1000 {
+            reg = <0x00001000 0x0006b000>;
         };
 
         storage_partition: partition@6c000 {
