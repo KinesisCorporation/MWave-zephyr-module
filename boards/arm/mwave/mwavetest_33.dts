@@ -45,8 +45,8 @@
     direct {
         kscan = <&kscan_sp3t_toggle>;
         row-offset = <6>; // ...and shift it to not overlap
-    };*/
-};
+    };
+};*/
 
     kscan1: kscan_1 {
         compatible = "zmk,kscan-gpio-matrix";
