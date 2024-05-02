@@ -1,7 +1,7 @@
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/bt.h>
-#include <dt-bindings/zmk/rgb.h>
+#include <dt-bindings/zmk/out.h>
 #include <dt-bindings/zmk/backlight.h>
 
 #define ANSI
@@ -11,6 +11,14 @@
   chosen {
     zmk,matrix-transform = &ansi_transform;
   };
+
+  macros {
+        switch_macro: switch_macro {
+            compatible = "zmk,behavior-macro-one-param";
+            #binding-cells = <1>; // Must be 1
+            bindings = <&out OUT_BLE>, <&macro_param_1to2>, <&bt BT_SEL MACRO_PLACEHOLDER> ;
+        };
+    };
 
   keymap {
     compatible = "zmk,keymap";
@@ -29,7 +37,7 @@
         &kp CAPS  &kp A  &kp S  &kp D  &kp F  &kp G  &kp H  &kp J  &kp  K    &kp  L  &kp SEMI &kp SQT            &kp RET
         &kp LSHFT  &kp Z  &kp X  &kp C  &kp V  &kp B  &kp N  &kp M  &kp COMMA &kp DOT &kp FSLH                &kp RSHFT
         &kp LCTRL &kp LGUI &kp LALT            &kp SPACE                          &kp RALT  &mo 1 &kp K_CMENU    &kp RCTRL
-        &kp A &kp B &kp C
+        &out OUT_USB &switch_macro 0 &switch_macro 1
       >;
     };
     raise {
@@ -46,7 +54,7 @@
         &trans    &kp LEFT &kp DOWN &kp RIGHT &rgb_ug RGB_BRI &rgb_ug RGB_BRD &trans &trans &trans &trans &kp HOME  &kp PG_UP   &bootloader
         &trans   &kp C_VOL_DN &kp C_VOL_UP &kp C_MUTE &bl BL_INC &bl BL_DEC &trans &trans &trans &kp END &kp PG_DN  &bl BL_TOG
         &bt BT_PRV &bt BT_NXT  &trans              &trans                            &trans   &trans   &sys_reset &bt BT_CLR
-        &kp A &kp B &kp C
+        &out OUT_USB &switch_macro 0 &switch_macro 1
       >;
     };
   };
