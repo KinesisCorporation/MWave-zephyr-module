@@ -13,14 +13,6 @@
     zmk,matrix-transform = &ansi_transform;
   };
 
-  macros {
-        switch_macro: switch_macro {
-            compatible = "zmk,behavior-macro-one-param";
-            #binding-cells = <1>; // Must be 1
-            bindings = <&out OUT_BLE>, <&macro_param_1to2>, <&bt BT_SEL MACRO_PLACEHOLDER> ;
-        };
-    };
-
   keymap {
     compatible = "zmk,keymap";
     default_layer {
