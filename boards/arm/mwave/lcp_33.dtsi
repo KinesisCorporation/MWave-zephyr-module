@@ -37,6 +37,16 @@
             pwms = <&pwm0 0 10000 PWM_POLARITY_INVERTED>;
         };
     };
+
+    swkscan: kscan_sw {
+        compatible = "zmk,kscan-gpio-direct";
+        toggle-mode;
+        input-gpios
+            = <&gpio0 3 (GPIO_ACTIVE_LOW|GPIO_PULL_UP)>
+            , <&gpio0 2 (GPIO_ACTIVE_LOW|GPIO_PULL_UP)>
+            , <&gpio0 28 (GPIO_ACTIVE_LOW|GPIO_PULL_UP)>
+            ;
+    };
 };
 
 &adc {
