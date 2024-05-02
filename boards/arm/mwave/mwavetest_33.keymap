@@ -38,7 +38,6 @@
         &kp CAPS  &kp A  &kp S  &kp D  &kp F  &kp G  &kp H  &kp J  &kp  K    &kp  L  &kp SEMI &kp SQT            &kp RET
         &kp LSHFT  &kp Z  &kp X  &kp C  &kp V  &kp B  &kp N  &kp M  &kp COMMA &kp DOT &kp FSLH                &kp RSHFT
         &kp LCTRL &kp LGUI &kp LALT            &kp SPACE                          &kp RALT  &mo 1 &kp K_CMENU    &kp RCTRL
-        &out OUT_USB &switch_macro 0 &switch_macro 1
       >;
     };
     raise {
@@ -55,7 +54,6 @@
         &trans    &kp LEFT &kp DOWN &kp RIGHT &rgb_ug RGB_BRI &rgb_ug RGB_BRD &trans &trans &trans &trans &kp HOME  &kp PG_UP   &bootloader
         &trans   &kp C_VOL_DN &kp C_VOL_UP &kp C_MUTE &bl BL_INC &bl BL_DEC &trans &trans &trans &kp END &kp PG_DN  &bl BL_TOG
         &bt BT_PRV &bt BT_NXT  &trans              &trans                            &trans   &trans   &sys_reset &bt BT_CLR
-        &out OUT_USB &switch_macro 0 &switch_macro 1
       >;
     };
   };

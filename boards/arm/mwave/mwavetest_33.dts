@@ -13,7 +13,7 @@
     compatible = "polarityworks,mwavetest";
 
     chosen {
-        zmk,kscan = &kscan0;
+        zmk,kscan = &kscan1;
         zmk,matrix-transform = &ansi_transform;
     };
 
@@ -27,9 +27,10 @@
       RC(3,0)     RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(3,6) RC(3,7) RC(3,8) RC(3,9) RC(3,10) RC(3,11)      RC(3,13)
       RC(4,0)       RC(4,2) RC(4,3) RC(4,4) RC(4,5) RC(4,6) RC(4,7) RC(4,8) RC(4,9) RC(4,10)  RC(4,11)       RC(4,12)
       RC(5,0)   RC(5,1)   RC(5,2)                      RC(5,6)                     RC(5,10)   RC(5,11)    RC(5,12)   RC(5,13)
-      RC(6,0) RC(6,1) RC(6,2)
+
     >;
   };
+  /*
   kscan0: kscan_composite {
     compatible = "zmk,kscan-composite";
     rows = <4>;
@@ -42,9 +43,9 @@
 
     // Include the direct GPIO driver...
     direct {
-        kscan = <&swkscan>;
+        kscan = <&kscan_sp3t_toggle>;
         row-offset = <6>; // ...and shift it to not overlap
-    };
+    };*/
 };
 
     kscan1: kscan_1 {
