@@ -12,6 +12,38 @@
   chosen {
     zmk,matrix-transform = &ansi_transform;
   };
+  macros {
+        ZMK_MACRO(ble_zero,
+            wait-ms = <1>;
+            tap-ms = <1>;
+            bindings = <&out OUT_BLE &bt BT_SEL 0>;
+        )
+        ZMK_MACRO(ble_one,
+            wait-ms = <1>;
+            tap-ms = <1>;
+            bindings = <&out OUT_BLE &bt BT_SEL 1>;
+        )
+    };
+
+    endpoint_sideband_behaviors {
+        compatible = "zmk,kscan-sideband-behaviors";
+        kscan = <&kscan_sp3t_toggle>;
+
+        first_toggle_sideband: first_toggle_sideband {
+            column = <0>;
+            bindings = <&out OUT_USB>;
+        };
+
+        second_toggle_sideband: second_toggle_sideband {
+            column = <1>;
+            bindings = <&ble_zero>;
+        };
+
+        third_toggle_sideband: third_toggle_sideband {
+            column = <2>;
+            bindings = <&ble_one>;
+        };
+    };
 
   keymap {
     compatible = "zmk,keymap";
