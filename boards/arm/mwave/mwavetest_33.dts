@@ -15,7 +15,7 @@
     chosen {
         zmk,kscan = &kscan1;
         zmk,matrix-transform = &ansi_transform;
-        zmk,underglow = &led_strip_1;
+        zmk,indicators = &led_strip_1;
     };
 
     ansi_transform: keymap_transform_0 {
