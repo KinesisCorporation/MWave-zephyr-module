@@ -11,5 +11,8 @@ manifest:
       remote: zmkfirmware
       revision: main
       import: app/west.yml
+    - name: gpio-rgb-zephyr-module
+      remote: refil
+      revision: main
   self:
     path: config
