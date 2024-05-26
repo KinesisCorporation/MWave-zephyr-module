@@ -24,10 +24,10 @@
         zmk,backlight = &backlight;
     };
 
-    backlight: pwmleds {
-        compatible = "pwm-leds";
-        pwm_led_0 {
-            pwms = <&pwm0 0 10000 PWM_POLARITY_INVERTED>;
+    backlight: gpio-leds {
+        compatible = "gpio-leds";
+        white_led: led_0w {
+            gpios = <&gpio0 28 GPIO_ACTIVE_HIGH>;
         };
     };
 
@@ -58,14 +58,6 @@
     cdc_acm_uart: cdc_acm_uart {
         compatible = "zephyr,cdc-acm-uart";
     };
-};
-
-// Single Colour Backlighting
-&pwm0 {
-    status = "okay";
-    pinctrl-0 = <&pwm0_20_default>;
-    pinctrl-1 = <&pwm0_20_sleep>;
-    pinctrl-names = "default", "sleep";
 };
 
 &spi0 {
