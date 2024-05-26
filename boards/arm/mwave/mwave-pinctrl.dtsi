@@ -18,14 +18,25 @@
             low-power-enable;
         };
     };
-    pwm0_default: pwm0_default {
+    pwm0_33_default: pwm0_33_default {
         group1 {
             psels = <NRF_PSEL(PWM_OUT0, 0, 29)>;
         };
     };
-    pwm0_sleep: pwm0_sleep {
+    pwm0_33_sleep: pwm_33_sleep {
         group1 {
             psels = <NRF_PSEL(PWM_OUT0, 0, 29)>;
+            low-power-enable;
+        };
+    };
+    pwm0_20_default: pwm0_20_default {
+        group1 {
+            psels = <NRF_PSEL(PWM_OUT0, 0, 28)>;
+        };
+    };
+    pwm0_20_sleep: pwm_20_sleep {
+        group1 {
+            psels = <NRF_PSEL(PWM_OUT0, 0, 28)>;
             low-power-enable;
         };
     };

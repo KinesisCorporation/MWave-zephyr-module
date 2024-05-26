@@ -1,0 +1,121 @@
+/*
+ * Copyright (c) 2024 The ZMK Contributors
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+/dts-v1/;
+
+#include <nordic/nrf52820_qdaa.dtsi>
+#include "mwave-pinctrl.dtsi"
+#include <dt-bindings/zmk/matrix_transform.h>
+
+
+
+/ {
+    model = "lcp";
+    compatible = "polarityworks,lcp";
+
+    chosen {
+        zephyr,code-partition = &code_partition;
+        zephyr,sram = &sram0;
+        zephyr,flash = &flash0;
+        zephyr,console = &cdc_acm_uart;
+        zmk,backlight = &backlight;
+        zmk,battery = &vbatt;
+    };
+
+    backlight: pwmleds {
+        compatible = "pwm-leds";
+        pwm_led_0 {
+            pwms = <&pwm0 0 10000 PWM_POLARITY_INVERTED>;
+        };
+    };
+
+    kscan_sp3t_toggle: kscan_sp3t_toggle {
+
+
+        compatible = "zmk,kscan-gpio-direct";
+        toggle-mode;
+
+        input-gpios
+            = <&gpio0 8 GPIO_ACTIVE_LOW>
+            , <&gpio0 29 GPIO_ACTIVE_LOW>
+            , <&gpio0 30 GPIO_ACTIVE_LOW>
+            ;
+    };
+};
+
+&adc {
+    status = "okay";
+};
+
+&gpiote {
+    status = "okay";
+};
+
+&gpio0 {
+    status = "okay";
+};
+
+&gpio1 {
+    status = "okay";
+};
+
+&usbd {
+    status = "okay";
+    cdc_acm_uart: cdc_acm_uart {
+        compatible = "zephyr,cdc-acm-uart";
+    };
+};
+
+// Single Colour Backlighting
+&pwm0 {
+    status = "okay";
+    pinctrl-0 = <&pwm0_20_default>;
+    pinctrl-1 = <&pwm0_20_sleep>;
+    pinctrl-names = "default", "sleep";
+};
+
+&spi0 {
+    status = "okay";
+    compatible = "nordic,nrf-spim";
+    pinctrl-0 = <&spi0_default>;
+    pinctrl-1 = <&spi0_sleep>;
+    pinctrl-names = "default", "sleep";
+    cs-gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;
+	shifter: 595@0 {
+		compatible = "zmk,gpio-595";
+		status = "okay";
+		gpio-controller;
+		spi-max-frequency = <200000>;
+		reg = <0>;
+		#gpio-cells = <2>;
+		ngpios = <24>;
+	};
+};
+
+
+&flash0 {
+    /*
+     * For more information, see:
+     * http://docs.zephyrproject.org/latest/devices/dts/flash_partitions.html
+     */
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+        code_partition: partition@000 {
+            reg = <0x0000000 0x0003c000>;
+        };
+
+        storage_partition: partition@3c000 {
+            reg = <0x0003c000 0x00008000>;
+        };
+
+        boot_partition: partition@34000 {
+            reg = <0x00034000 0x0000c000>;
+        };
+    };
+};
