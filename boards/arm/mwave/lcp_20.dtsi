@@ -22,7 +22,6 @@
         zephyr,flash = &flash0;
         zephyr,console = &cdc_acm_uart;
         zmk,backlight = &backlight;
-        zmk,battery = &vbatt;
     };
 
     backlight: pwmleds {
@@ -46,19 +45,11 @@
     };
 };
 
-&adc {
-    status = "okay";
-};
-
 &gpiote {
     status = "okay";
 };
 
 &gpio0 {
-    status = "okay";
-};
-
-&gpio1 {
     status = "okay";
 };
 
