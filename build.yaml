@@ -19,5 +19,4 @@
 ---
 
 include:
-  - board: mwavetest_33
   - board: mwave_33

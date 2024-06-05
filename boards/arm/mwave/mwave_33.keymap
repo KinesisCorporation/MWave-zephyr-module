@@ -50,23 +50,23 @@
         // |  CTL  |  WIN  |  ALT  |      SPACE      | |      SPACE        | ALT | MENU |RCTRL| LEFT| DOWN |RIGHT|
         // -------------------------------------------------------------------------------------------------------
       bindings = <
-        &kp ESC &kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &kp F6 &kp F7 &kp F8 &kp F9 &kp F10 &kp F11 &kp F12 &kp HOME &kp END &kp PSCRN &mo 1
-        &kp GRAVE &kp N1 &kp N2 &kp N3 &kp N4 &kp N5 &kp N6 &kp N7 &kp  N8   &kp  N9   &kp N0 &kp MINUS &kp EQUAL &kp BKSP
-        &kp TAB   &kp Q  &kp W  &kp E  &kp R  &kp T  &kp Y  &kp U  &kp  I    &kp  O  &kp  P   &kp LBKT &kp RBKT &kp BSLH &kp DEL
-        &kp CLCK   &kp A  &kp S  &kp D  &kp F  &kp G  &kp H  &kp J  &kp  K    &kp  L  &kp SEMI &kp SQT         &kp RET &kp PG_UP
-        &kp LSHFT     &kp Z  &kp X  &kp C  &kp V  &kp B  &kp N  &kp M  &kp COMMA &kp DOT &kp FSLH   &kp RSHFT   &kp UP &kp PG_DN
-        &kp LCTRL &kp LGUI &kp LALT            &kp SPACE         &kp SPACE                 &kp RALT  &kp C_MENU &kp RCTRL &kp LEFT &kp DOWN &kp RIGHT
+        &kp ESC   &kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &kp F6 &kp F7 &kp F8 &kp F9 &kp F10 &kp F11 &kp F12 &kp HOME &kp END &kp PSCRN &mo 1
+        &kp GRAVE &kp N1 &kp N2 &kp N3 &kp N4 &kp N5 &kp N6    &kp N7   &kp N8 &kp N9 &kp N0 &kp MINUS &kp EQUAL      &kp BKSP
+        &kp TAB     &kp Q  &kp W  &kp E  &kp R  &kp T             &kp Y  &kp U  &kp I    &kp O  &kp P  &kp LBKT &kp RBKT &kp BSLH &kp DEL
+        &kp CLCK      &kp A  &kp S  &kp D  &kp F    &kp G          &kp H  &kp J  &kp K    &kp L  &kp SEMI &kp SQT    &kp RET    &kp PG_UP
+        &kp LSHFT     &kp Z  &kp X  &kp C  &kp V  &kp B         &kp N    &kp M  &kp COMMA &kp DOT &kp FSLH   &kp RSHFT   &kp UP &kp PG_DN
+        &kp LCTRL &kp LGUI &kp LALT            &kp SPACE         &kp SPACE     &kp RALT  &kp C_MENU &kp RCTRL &kp LEFT &kp DOWN &kp RIGHT
       >;
     };
     raise {
 
       bindings = <
-        &none &none &none &none &none &none &none &none &none &none &none &none &none &bt BT_CLR &none &none &mo 1
+        &none &kp C_MUTE &kp C_VOL_DN &kp C_VOL_UP &kp C_PREV &kp C_PP &kp C_NEXT &bl BL_CYCLE  &kp C_AL_CALC &kp C_BRI_DN  &kp C_BRI_UP &kp C_AC_SEARCH &bt BT_CLR &none &none &none &mo 1
         &none &none &none &none &none &none &none &none &none   &none &none &none &none &none
         &none   &none  &none  &none  &none  &none  &none  &none  &none   &none &none  &none &none &none &none
         &none   &none  &none  &none  &none  &none  &none  &none  &none    &none &none &none         &none &none
         &none     &none  &none  &none  &none  &none  &none  &none  &none &none &none   &none   &none &none
-        &none &none &none            &none                   &none  &none &none &none &none &none
+        &none &none &none            &none                &none    &none  &none &none &none &none &none
       >;
     };
   };
