@@ -12,7 +12,7 @@
   chosen {
     zmk,matrix-transform = &ansi_transform;
   };
-  macros {
+ /*macros {
         ZMK_MACRO(ble_zero,
             wait-ms = <1>;
             tap-ms = <1>;
@@ -23,27 +23,27 @@
             tap-ms = <1>;
             bindings = <&out OUT_BLE &bt BT_SEL 1>;
         )
-    };
+    };*/
 
-    endpoint_sideband_behaviors {
+   /* endpoint_sideband_behaviors {
         compatible = "zmk,kscan-sideband-behaviors";
         kscan = <&kscan_sp3t_toggle>;
 
         first_toggle_sideband: first_toggle_sideband {
             column = <0>;
-            bindings = <&out OUT_USB>;
+            bindings = <&kp A>;
         };
 
         second_toggle_sideband: second_toggle_sideband {
             column = <1>;
-            bindings = <&ble_zero>;
+            bindings = <&kp B>;
         };
 
         third_toggle_sideband: third_toggle_sideband {
             column = <2>;
-            bindings = <&ble_one>;
+            bindings = <&kp C>;
         };
-    };
+    };*/
 
   keymap {
     compatible = "zmk,keymap";
@@ -74,9 +74,9 @@
         // ------------------------------------------------------------------------------------------
       bindings = <
         &kp GRAVE &kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &kp F6 &kp F7 &kp F8 &kp F9 &kp F10 &kp F11 &kp F12 &kp DEL
-        &trans &trans &kp UP &trans &rgb_ug RGB_HUI &rgb_ug RGB_HUD &trans &trans &kp INS &trans &kp PSCRN &kp SLCK &kp PAUSE_BREAK &rgb_ug RGB_TOG
-        &trans    &kp LEFT &kp DOWN &kp RIGHT &rgb_ug RGB_BRI &rgb_ug RGB_BRD &trans &trans &trans &trans &kp HOME  &kp PG_UP   &bootloader
-        &trans   &kp C_VOL_DN &kp C_VOL_UP &kp C_MUTE &bl BL_INC &bl BL_DEC &trans &trans &trans &kp END &kp PG_DN  &bl BL_TOG
+        &trans &trans &kp UP &trans &none &none &trans &trans &kp INS &trans &kp PSCRN &kp SLCK &kp PAUSE_BREAK &none
+        &trans    &kp LEFT &kp DOWN &kp RIGHT &none &none &trans &trans &trans &trans &kp HOME  &kp PG_UP   &bootloader
+        &trans   &kp C_VOL_DN &kp C_VOL_UP &kp C_MUTE &none &none &trans &trans &trans &kp END &kp PG_DN  &none
         &bt BT_PRV &bt BT_NXT  &trans              &trans                            &trans   &trans   &sys_reset &bt BT_CLR
       >;
     };

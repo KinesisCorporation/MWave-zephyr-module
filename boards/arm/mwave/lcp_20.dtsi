@@ -20,11 +20,11 @@
         zephyr,code-partition = &code_partition;
         zephyr,sram = &sram0;
         zephyr,flash = &flash0;
-        zephyr,console = &cdc_acm_uart;
+        // zephyr,console = &cdc_acm_uart;
         zmk,backlight = &backlight;
     };
 
-    backlight: gpio-leds {
+   backlight: gpio-leds {
         compatible = "gpio-leds";
         white_led: led_0w {
             gpios = <&gpio0 28 GPIO_ACTIVE_HIGH>;
@@ -39,7 +39,6 @@
 
         input-gpios
             = <&gpio0 8 GPIO_ACTIVE_LOW>
-            , <&gpio0 29 GPIO_ACTIVE_LOW>
             , <&gpio0 30 GPIO_ACTIVE_LOW>
             ;
     };
@@ -54,10 +53,12 @@
 };
 
 &usbd {
-    status = "okay";
+    status = "disabled";
+    /* 
     cdc_acm_uart: cdc_acm_uart {
         compatible = "zephyr,cdc-acm-uart";
-    };
+    }; 
+    */
 };
 
 &spi0 {
@@ -88,15 +89,16 @@
         compatible = "fixed-partitions";
         #address-cells = <1>;
         #size-cells = <1>;
-
-        code_partition: partition@000 {
-            reg = <0x0000000 0x0003c000>;
+        sd_partition: partition@0 {
+            reg = <0x00000000 0x0001000>;
+        };
+        code_partition: partition@1000 {
+            reg = <0x00001000 0x0002c000>;
         };
 
-        storage_partition: partition@3c000 {
-            reg = <0x0003c000 0x00008000>;
+        storage_partition: partition@2c000 {
+            reg = <0x0002c000 0x00008000>;
         };
-
         boot_partition: partition@34000 {
             reg = <0x00034000 0x0000c000>;
         };

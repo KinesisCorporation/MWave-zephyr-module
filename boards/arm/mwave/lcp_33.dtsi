@@ -8,6 +8,7 @@
 
 #include <nordic/nrf52833_qiaa.dtsi>
 #include "mwave-pinctrl.dtsi"
+#include "mwave-33-pinctrl.dtsi"
 #include <dt-bindings/zmk/matrix_transform.h>
 
 

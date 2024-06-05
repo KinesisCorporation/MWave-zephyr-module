@@ -6,6 +6,7 @@ config BOARD
     default "mwave_20" if BOARD_MWAVE_20
     default "mwavetest_33" if BOARD_MWAVETEST_33
     default "mwavetest_20" if BOARD_MWAVETEST_20
+    
 config ZMK_KEYBOARD_NAME
     default "M-Wave"
 
