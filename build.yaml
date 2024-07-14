@@ -20,3 +20,4 @@
 
 include:
   - board: mwave_33
+  - board: mwavetest_33
