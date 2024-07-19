@@ -13,7 +13,7 @@
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/logging/log.h>
 
-#include <drivers/sensors/battery/battery_common.h>
+#include <drivers/sensor/battery/battery_common.h>
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
