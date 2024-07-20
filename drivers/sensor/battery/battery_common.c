@@ -62,7 +62,7 @@ uint8_t alkaline_mv_to_pct(int16_t bat_mv) {
         {.millivolts = (900*2), .percent = 0},
     };
 
-    if (batt_mv > battery_lookup[0].millivolts) {
+    if (bat_mv > battery_lookup[0].millivolts) {
         return battery_lookup[0].percent;
     }
 
@@ -98,7 +98,7 @@ uint8_t cr2032_mv_to_pct(int16_t bat_mv) {
         {.millivolts = (900*2), .percent = 0},
     };
 
-    if (batt_mv > battery_lookup[0].millivolts) {
+    if (bat_mv > battery_lookup[0].millivolts) {
         return battery_lookup[0].percent;
     }
 
