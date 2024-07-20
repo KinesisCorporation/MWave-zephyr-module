@@ -1,0 +1,18 @@
+# Copyright (c) 2020-2021 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+DT_COMPAT_KINESIS_BATTERY_VOLTAGE_DIVIDER := kinesis,battery-voltage-divider
+
+config KINESIS_BATTERY
+    bool "KINESIS battery monitoring"
+    help
+        Enable battery monitoring
+
+config KINESIS_BATTERY_VOLTAGE_DIVIDER
+    bool
+    default $(dt_compat_enabled,$(DT_COMPAT_KINESIS_BATTERY_VOLTAGE_DIVIDER))
+    select ADC
+    select KINESIS_BATTERY
+    depends on SENSOR
+    help
+        Enable KINESIS battery voltage divider driver for battery monitoring.

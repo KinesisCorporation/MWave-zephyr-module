@@ -10,11 +10,3 @@ if (CONFIG_ZMK_BACKLIGHT)
             PROPERTIES HEADER_FILE_ONLY ON)
         zephyr_library_sources(src/behaviors/behavior_backlight.c)
 endif()
-
-if (CONFIG_ZMK_BATTERY_REPORTING)
-    set_source_files_properties(
-            ${APPLICATION_SOURCE_DIR}/module/drivers/sensor/battery/battery_voltage_divider.c
-            TARGET_DIRECTORY app
-            PROPERTIES HEADER_FILE_ONLY ON)
-        zephyr_library_sources(drivers/sensor/battery/battery_voltage_divider.c)
-endif()

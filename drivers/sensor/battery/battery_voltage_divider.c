@@ -13,7 +13,7 @@
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/logging/log.h>
 
-#include <drivers/sensor/battery/battery_common.h>
+#include "battery_common.h"
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
@@ -34,11 +34,6 @@ struct bvd_data {
     struct adc_sequence as;
     struct battery_value value;
 };
-
-uint8_t alkaline_mv_to_pct(int16_t bat_mv) {
-    return 30;
-}
-
 
 static int bvd_sample_fetch(const struct device *dev, enum sensor_channel chan) {
     struct bvd_data *drv_data = dev->data;
@@ -79,7 +74,7 @@ static int bvd_sample_fetch(const struct device *dev, enum sensor_channel chan) 
 
         uint16_t millivolts = val * (uint64_t)drv_cfg->full_ohm / drv_cfg->output_ohm;
         LOG_DBG("ADC raw %d ~ %d mV => %d mV", drv_data->value.adc_raw, val, millivolts);
-        uint8_t percent = alkaline_mv_to_pct(millivolts);
+        uint8_t percent = lithium_ion_mv_to_pct(millivolts);
         LOG_DBG("Percent: %d", percent);
 
         drv_data->value.millivolts = millivolts;
