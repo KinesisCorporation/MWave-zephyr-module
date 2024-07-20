@@ -16,7 +16,7 @@
 #include <zmk/usb.h>
 #include <zmk/events/battery_state_changed.h>
 
-
+#error "wat"
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #if DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT)
@@ -129,6 +129,8 @@ on_keymap_binding_convert_central_state_dependent_params(struct zmk_behavior_bin
 
 static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
                                      struct zmk_behavior_binding_event event) {
+                                        raise_zmk_battery_state_changed(
+            (struct zmk_battery_state_changed){.state_of_charge = 20});
     if(zmk_usb_is_powered()){
         LOG_DBG("USB power detected");
         switch (binding->param1) {
@@ -137,8 +139,7 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
         case BL_OFF_CMD:
             return zmk_backlight_off();
         case BL_TOG_CMD:
-            return raise_zmk_battery_state_changed(
-            (struct zmk_battery_state_changed){.state_of_charge = 20});
+            return zmk_backlight_toggle();
         case BL_INC_CMD: {
             uint8_t brt = zmk_backlight_calc_brt(1);
             return zmk_backlight_set_brt(brt);
