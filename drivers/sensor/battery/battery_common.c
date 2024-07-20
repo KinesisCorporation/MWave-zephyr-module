@@ -69,8 +69,8 @@ uint8_t alkaline_mv_to_pct(int16_t bat_mv) {
     for (int i = 1; i < ARRAY_SIZE(battery_lookup); i++) {
         struct lookup_point one = battery_lookup[i - 1];
         struct lookup_point two = battery_lookup[i];
-        if (batt_mv >= two.millivolts) {
-            const int t = batt_mv - one.millivolts;
+        if (bat_mv >= two.millivolts) {
+            const int t = bat_mv - one.millivolts;
             const int dx = two.millivolts - one.millivolts;
             const int dy = two.percent - one.percent;
             return one.percent + dy * t / dx;
@@ -105,8 +105,8 @@ uint8_t cr2032_mv_to_pct(int16_t bat_mv) {
     for (int i = 1; i < ARRAY_SIZE(battery_lookup); i++) {
         struct lookup_point one = battery_lookup[i - 1];
         struct lookup_point two = battery_lookup[i];
-        if (batt_mv >= two.millivolts) {
-            const int t = batt_mv - one.millivolts;
+        if (bat_mv >= two.millivolts) {
+            const int t = bat_mv - one.millivolts;
             const int dx = two.millivolts - one.millivolts;
             const int dy = two.percent - one.percent;
             return one.percent + dy * t / dx;
