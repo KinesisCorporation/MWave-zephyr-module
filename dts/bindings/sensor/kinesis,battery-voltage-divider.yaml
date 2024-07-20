@@ -7,10 +7,11 @@ compatible: "kinesis,battery-voltage-divider"
 
 include: voltage-divider.yaml
 
-chemistry:
-  type: int
-  enum:
-    - 1
-    - 2
-    - 3
-  default: 1
+properties:
+  chemistry:
+    type: int
+    enum:
+      - 1
+      - 2
+      - 3
+    default: 1
