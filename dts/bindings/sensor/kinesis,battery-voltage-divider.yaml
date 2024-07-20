@@ -6,3 +6,11 @@ description: Battery SoC monitoring using voltage divider
 compatible: "kinesis,battery-voltage-divider"
 
 include: voltage-divider.yaml
+
+chemistry:
+  type: int
+  enum:
+    - 1
+    - 2
+    - 3
+  default: 1

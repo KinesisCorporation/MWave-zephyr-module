@@ -26,6 +26,7 @@ struct bvd_config {
     struct gpio_dt_spec power;
     uint32_t output_ohm;
     uint32_t full_ohm;
+    int chemistry;
 };
 
 struct bvd_data {
@@ -74,7 +75,26 @@ static int bvd_sample_fetch(const struct device *dev, enum sensor_channel chan) 
 
         uint16_t millivolts = val * (uint64_t)drv_cfg->full_ohm / drv_cfg->output_ohm;
         LOG_DBG("ADC raw %d ~ %d mV => %d mV", drv_data->value.adc_raw, val, millivolts);
-        uint8_t percent = alkaline_mv_to_pct(millivolts);
+        uint8_t percent = 0;
+        switch (drv_cfg->chemistry)
+        {
+        case 1:
+            LOG_DBG("Lithium chemistry");
+            percent = lithium_ion_mv_to_pct(millivolts);
+            break;
+        case 2:
+            LOG_DBG("Alkaline chemistry");
+            percent = alkaline_mv_to_pct(millivolts);
+            break;
+        case 3:
+            LOG_DBG("CR2032 chemistry");
+            percent = cr2032_mv_to_pct(millivolts);
+            break;
+        
+        default:
+            LOG_ERR("Unsupported chemistry: %d", drv_cfg->chemistry);
+            break;
+        }
         LOG_DBG("Percent: %d", percent);
 
         drv_data->value.millivolts = millivolts;
@@ -169,6 +189,7 @@ static const struct bvd_config bvd_cfg = {
 #endif
     .output_ohm = DT_INST_PROP(0, output_ohms),
     .full_ohm = DT_INST_PROP(0, full_ohms),
+    .chemistry = DT_INST_PROP(0, chemistry),
 };
 
 DEVICE_DT_INST_DEFINE(0, &bvd_init, NULL, &bvd_data, &bvd_cfg, POST_KERNEL,

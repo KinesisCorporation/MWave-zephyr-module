@@ -10,6 +10,7 @@
 #include "mwave-pinctrl.dtsi"
 #include "mwave-33-pinctrl.dtsi"
 #include <dt-bindings/zmk/matrix_transform.h>
+#include <dt-bindings/battery_chemistry.h>
 
 
 
@@ -31,6 +32,7 @@
         io-channels = <&adc 6>;
         output-ohms = <3000000>;
         full-ohms = <(2000000 + 3000000)>;
+        chemistry = <ALKALINE>;
     };
 
     backlight: pwmleds {

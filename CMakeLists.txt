@@ -1,5 +1,6 @@
 zephyr_library()
 zephyr_include_directories(${APPLICATION_SOURCE_DIR}/include)
+zephyr_include_directories(include)
 
 # Hook and replace standard behavior_backlight.c with our one
 if (CONFIG_ZMK_BACKLIGHT)
