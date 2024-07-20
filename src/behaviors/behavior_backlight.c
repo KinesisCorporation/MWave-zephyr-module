@@ -14,6 +14,8 @@
 #include <zmk/backlight.h>
 #include <zmk/keymap.h>
 #include <zmk/usb.h>
+#include <zmk/events/battery_state_changed.h>
+
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
@@ -135,7 +137,8 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
         case BL_OFF_CMD:
             return zmk_backlight_off();
         case BL_TOG_CMD:
-            return zmk_backlight_toggle();
+            return raise_zmk_battery_state_changed(
+            (struct zmk_battery_state_changed){.state_of_charge = 20});
         case BL_INC_CMD: {
             uint8_t brt = zmk_backlight_calc_brt(1);
             return zmk_backlight_set_brt(brt);
