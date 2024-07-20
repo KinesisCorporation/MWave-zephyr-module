@@ -74,7 +74,7 @@ static int bvd_sample_fetch(const struct device *dev, enum sensor_channel chan) 
 
         uint16_t millivolts = val * (uint64_t)drv_cfg->full_ohm / drv_cfg->output_ohm;
         LOG_DBG("ADC raw %d ~ %d mV => %d mV", drv_data->value.adc_raw, val, millivolts);
-        uint8_t percent = lithium_ion_mv_to_pct(millivolts);
+        uint8_t percent = alkaline_mv_to_pct(millivolts);
         LOG_DBG("Percent: %d", percent);
 
         drv_data->value.millivolts = millivolts;

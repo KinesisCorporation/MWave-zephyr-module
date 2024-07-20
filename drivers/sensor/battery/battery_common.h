@@ -19,3 +19,7 @@ int battery_channel_get(const struct battery_value *value, enum sensor_channel c
                         struct sensor_value *val_out);
 
 uint8_t lithium_ion_mv_to_pct(int16_t bat_mv);
+
+uint8_t alkaline_mv_to_pct(int16_t bat_mv);
+
+uint8_t cr2032_mv_to_pct(int16_t bat_mv);
