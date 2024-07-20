@@ -128,7 +128,6 @@ on_keymap_binding_convert_central_state_dependent_params(struct zmk_behavior_bin
 
 static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
                                      struct zmk_behavior_binding_event event) {
-    raise_zmk_battery_state_changed((struct zmk_battery_state_changed){.state_of_charge = 20});
     if(zmk_usb_is_powered()){
         LOG_DBG("USB power detected");
         switch (binding->param1) {
