@@ -44,7 +44,7 @@
 
     kscan_sp3t_toggle: kscan_sp3t_toggle {
 
-
+        wakeup-source;
         compatible = "zmk,kscan-gpio-direct";
         toggle-mode;
 
