@@ -88,14 +88,12 @@ uint8_t cr2032_mv_to_pct(int16_t bat_mv) {
     };
 
     static const struct lookup_point battery_lookup[] = {
-        {.millivolts = (1600*2), .percent = 100}, 
-        {.millivolts = (1500*2), .percent = 94},
-        {.millivolts = (1450*2), .percent = 88},
-        {.millivolts = (1300*2), .percent = 40},
-        {.millivolts = (1260*2), .percent = 28},
-        {.millivolts = (1200*2), .percent = 16},
-        {.millivolts = (1140*2), .percent = 10},
-        {.millivolts = (900*2), .percent = 0},
+        {.millivolts = 2900, .percent = 100}, 
+        {.millivolts = 2700, .percent = 30},
+        {.millivolts = 2600, .percent = 20},
+        {.millivolts = 2500, .percent = 10},
+        {.millivolts = 2200, .percent = 5},
+        {.millivolts = 2000, .percent = 0},
     };
 
     if (bat_mv > battery_lookup[0].millivolts) {
