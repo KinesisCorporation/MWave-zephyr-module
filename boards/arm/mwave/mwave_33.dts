@@ -14,7 +14,7 @@
      compatible = "polarityworks,mwavetest";
  
      chosen {
-         zmk,physical-layout = &physical_layout
+         zmk,physical-layout = &physical_layout;
          zmk,indicators = &led_strip_1;
      };
    kscan1: kscan_1 {
