@@ -8,6 +8,7 @@
 
  #include "lcp_33.dtsi"
  #include "mwave_transform.dtsi"
+ #include <physical_layouts.dtsi>
 
  / {
      model = "mwavetest";
