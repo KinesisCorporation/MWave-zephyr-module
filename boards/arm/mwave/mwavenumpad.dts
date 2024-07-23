@@ -1,0 +1,108 @@
+/dts-v1/;
+
+ #include "lcp_33.dtsi"
+ #include "mwave_transform.dtsi"
+ #include <physical_layouts.dtsi>
+
+ / {
+     model = "mwavetest";
+     compatible = "polarityworks,mwavetest";
+ 
+     chosen {
+         zmk,physical-layout = &physical_layout;
+         zmk,indicators = &led_strip_1;
+     };
+   kscan1: kscan_1 {
+         compatible = "zmk,kscan-gpio-matrix";
+         wakeup-source;
+ 
+         diode-direction = "col2row";
+ 
+         col-gpios
+             = <&shifter 1 GPIO_ACTIVE_HIGH>
+             , <&shifter 2 GPIO_ACTIVE_HIGH>
+             , <&shifter 3 GPIO_ACTIVE_HIGH>
+             , <&shifter 4 GPIO_ACTIVE_HIGH>
+             , <&shifter 5 GPIO_ACTIVE_HIGH>
+             , <&shifter 6 GPIO_ACTIVE_HIGH>
+             , <&shifter 7 GPIO_ACTIVE_HIGH>
+             , <&shifter 15 GPIO_ACTIVE_HIGH>
+             , <&shifter 14 GPIO_ACTIVE_HIGH>
+             , <&shifter 16 GPIO_ACTIVE_HIGH>
+             , <&shifter 17 GPIO_ACTIVE_HIGH>
+             , <&shifter 18 GPIO_ACTIVE_HIGH>
+             , <&shifter 19 GPIO_ACTIVE_HIGH>
+             , <&shifter 20 GPIO_ACTIVE_HIGH>
+             , <&shifter 21 GPIO_ACTIVE_HIGH>
+             , <&shifter 22 GPIO_ACTIVE_HIGH>
+             , <&shifter 23 GPIO_ACTIVE_HIGH>
+             ;
+ 
+         row-gpios
+             = <&gpio0 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+             , <&gpio0 17 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+             , <&gpio0 20 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+             , <&gpio0 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+             , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+             , <&gpio1 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+             ;
+     };
+ 
+     led_0: led_0 {
+         compatible = "gpio-leds";
+         red_led: led_0r {
+             gpios = <&shifter 13 GPIO_ACTIVE_LOW>;
+         };
+         green_led: led_0g {
+             gpios = <&shifter 12 GPIO_ACTIVE_LOW>;
+         };
+         blue_led: led_0b {
+             gpios = <&shifter 11 GPIO_ACTIVE_LOW>;
+         };
+     };
+ 
+     led_1: led_1 {
+         compatible = "gpio-leds";
+         red_led1: led_1r {
+             gpios = <&shifter 10 GPIO_ACTIVE_LOW>;
+         };
+         green_led1: led_1g {
+             gpios = <&shifter 9 GPIO_ACTIVE_LOW>;
+         };
+         blue_led1: led_1b {
+             gpios = <&shifter 8 GPIO_ACTIVE_LOW>;
+         };
+     };
+ 
+     led_strip_1: gpio_led_strip {
+         compatible = "zmk,gpio-led-strip";
+         chain-length = <2>;
+         led-0 {
+             led = <&led_0>;
+         };
+         led-1 {
+             led = <&led_1>;
+         };
+     };
+};
+
+/delete-node/ &spi0;
+/delete-node/ &shifter;
+
+&spi0 {
+    status = "okay";
+    compatible = "nordic,nrf-spim";
+    pinctrl-0 = <&spi0_default>;
+    pinctrl-1 = <&spi0_sleep>;
+    pinctrl-names = "default", "sleep";
+    cs-gpios = <&gpio0 31 GPIO_ACTIVE_LOW>;
+	shifter: 595@0 {
+		compatible = "zmk,gpio-595";
+		status = "okay";
+		gpio-controller;
+		spi-max-frequency = <200000>;
+		reg = <0>;
+		#gpio-cells = <2>;
+		ngpios = <8>;
+	};
+};
