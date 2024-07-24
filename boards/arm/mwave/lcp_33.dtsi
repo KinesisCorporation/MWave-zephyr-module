@@ -42,7 +42,7 @@
         };
     };
 
-    /*kscan_sp3t_toggle: kscan_sp3t_toggle {
+    kscan_sp3t_toggle: kscan_sp3t_toggle {
 
         wakeup-source;
         compatible = "zmk,kscan-gpio-direct";
@@ -53,7 +53,7 @@
             , <&gpio0 2 GPIO_ACTIVE_LOW>
             , <&gpio0 28 GPIO_ACTIVE_LOW>
             ;
-    };*/
+    };
 };
 
 &adc {
