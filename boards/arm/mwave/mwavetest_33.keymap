@@ -12,7 +12,7 @@
   chosen {
     zmk,matrix-transform = &ansi_transform;
   };
-  /*macros {
+  macros {
         ZMK_MACRO(ble_zero,
             wait-ms = <1>;
             tap-ms = <1>;
@@ -45,7 +45,7 @@
             bindings = <&ble_one>;
         };
     };
-*/
+
   keymap {
     compatible = "zmk,keymap";
     default_layer {
