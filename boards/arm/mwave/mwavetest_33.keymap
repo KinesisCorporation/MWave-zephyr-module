@@ -32,17 +32,17 @@
 
         first_toggle_sideband: first_toggle_sideband {
             column = <0>;
-            bindings = <&out OUT_USB>;
+            bindings = <&none>;
         };
 
         second_toggle_sideband: second_toggle_sideband {
             column = <1>;
-            bindings = <&ble_zero>;
+            bindings = <&none>;
         };
 
         third_toggle_sideband: third_toggle_sideband {
             column = <2>;
-            bindings = <&ble_one>;
+            bindings = <&none>;
         };
     };
 
