@@ -1,0 +1,17 @@
+# Copyright (c) 2020 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: Battery SoC monitoring using voltage divider
+
+compatible: "kinesis,battery-voltage-divider"
+
+include: voltage-divider.yaml
+
+properties:
+  chemistry:
+    type: int
+    enum:
+      - 1
+      - 2
+      - 3
+    default: 1

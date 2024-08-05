@@ -10,6 +10,7 @@
 #include "mwave-pinctrl.dtsi"
 #include "mwave-33-pinctrl.dtsi"
 #include <dt-bindings/zmk/matrix_transform.h>
+#include <dt-bindings/battery_chemistry.h>
 
 
 
@@ -21,16 +22,17 @@
         zephyr,code-partition = &code_partition;
         zephyr,sram = &sram0;
         zephyr,flash = &flash0;
-        zephyr,console = &cdc_acm_uart;
+        //zephyr,console = &cdc_acm_uart;
         zmk,backlight = &backlight;
         zmk,battery = &vbatt;
     };
 
    vbatt: vbatt {
-        compatible = "zmk,battery-voltage-divider";
+        compatible = "kinesis,battery-voltage-divider";
         io-channels = <&adc 6>;
-        output-ohms = <2000000>;
+        output-ohms = <3000000>;
         full-ohms = <(2000000 + 3000000)>;
+        chemistry = <ALKALINE>;
     };
 
     backlight: pwmleds {
@@ -42,7 +44,7 @@
 
     kscan_sp3t_toggle: kscan_sp3t_toggle {
 
-
+        wakeup-source;
         compatible = "zmk,kscan-gpio-direct";
         toggle-mode;
 
@@ -70,7 +72,7 @@
     status = "okay";
 };
 
-&usbd {
+zephyr_udc0: &usbd {
     status = "okay";
     cdc_acm_uart: cdc_acm_uart {
         compatible = "zephyr,cdc-acm-uart";

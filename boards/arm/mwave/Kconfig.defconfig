@@ -3,14 +3,14 @@
 
 config BOARD
     default "mwave_33" if BOARD_MWAVE_33
-    default "mwave_20" if BOARD_MWAVE_20
     default "mwavetest_33" if BOARD_MWAVETEST_33
     default "mwavetest_20" if BOARD_MWAVETEST_20
+    default "mwavenumpad" if BOARD_MWAVENUMPAD
     
 config ZMK_KEYBOARD_NAME
     default "M-Wave"
 
-if BOARD_MWAVE_33 || BOARD_MWAVE_20 || BOARD_MWAVETEST_33 || BOARD_MWAVETEST_20
+if BOARD_MWAVE_33 || BOARD_MWAVETEST_33 || BOARD_MWAVETEST_20 || BOARD_MWAVENUMPAD
 
 if USB
 
@@ -25,4 +25,4 @@ endif # USB
 config BT_CTLR
     default BT
 
-endif # BOARD_MWAVE_33 || BOARD_MWAVE_20 || BOARD_MWAVETEST_33 || BOARD_MWAVETEST_20
+endif # BOARD_MWAVE_33 || BOARD_MWAVETEST_33 || BOARD_MWAVETEST_20 || BOARD_MWAVENUMPAD
