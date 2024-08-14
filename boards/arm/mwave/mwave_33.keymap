@@ -5,7 +5,7 @@
 #include <dt-bindings/zmk/backlight.h>
 
 / {
- /* macros {
+  macros {
         ZMK_MACRO(ble_zero,
             wait-ms = <1>;
             tap-ms = <1>;
@@ -36,7 +36,7 @@
             column = <2>;
             bindings = <&ble_one>;
         };
-    };*/
+    };
 
   keymap {
     compatible = "zmk,keymap";
