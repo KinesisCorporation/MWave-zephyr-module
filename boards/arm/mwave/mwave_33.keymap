@@ -6,16 +6,43 @@
 
 / {
   macros {
-        ZMK_MACRO(ble_zero,
-            wait-ms = <1>;
-            tap-ms = <1>;
-            bindings = <&out OUT_BLE &bt BT_SEL 0>;
-        )
-        ZMK_MACRO(ble_one,
-            wait-ms = <1>;
-            tap-ms = <1>;
-            bindings = <&out OUT_BLE &bt BT_SEL 1>;
-        )
+    ZMK_MACRO(ble_zero,
+        wait-ms = <1>;
+        tap-ms = <1>;
+        bindings = <&out OUT_BLE &bt BT_SEL 0>;
+    )
+    ZMK_MACRO(ble_one,
+        wait-ms = <1>;
+        tap-ms = <1>;
+        bindings = <&out OUT_BLE &bt BT_SEL 1>;
+    )
+    macro_screenshot: macro_screenshot {
+      compatible = "zmk,behavior-macro";
+      #binding-cells = <0>; // Must be 0
+      wait-ms = <3>;
+      bindings = <&macro_press &kp LEFT_WIN>
+      , <&macro_press &kp LEFT_SHIFT>
+      , <&macro_press &kp S>
+      , <&macro_release &kp S>
+      , <&macro_release &kp LEFT_SHIFT>
+      , <&macro_release &kp LEFT_WIN>
+      ;
+    };
+    macro_search: macro_search {
+      compatible = "zmk,behavior-macro";
+      #binding-cells = <0>; // Must be 0
+      wait-ms = <3>;
+      bindings = <&macro_press &kp LEFT_WIN>
+      , <&macro_press &kp S>
+      , <&macro_release &kp S>
+      , <&macro_release &kp LEFT_WIN>
+      ;
+    };
+    macro_ver: macro_ver {
+      compatible = "zmk,behavior-macro";
+      #binding-cells = <0>;
+      bindings = <&kp RET>;
+    };
     };
 
     endpoint_sideband_behaviors {
@@ -61,12 +88,12 @@
     raise {
 
       bindings = <
-        &none &kp C_MUTE &kp C_VOL_DN &kp C_VOL_UP &kp C_PREV &kp C_PP &kp C_NEXT &bl BL_CYCLE  &kp C_AL_CALC &kp C_BRI_DN  &kp C_BRI_UP &kp C_AC_SEARCH &bt BT_CLR &none &none &none &mo 1
-        &none &none &none &none &none &none &none &none &none   &none &none &none &none &none
-        &none   &none  &none  &none  &none  &none  &none  &none  &none   &none &none  &none &none &none &none
-        &none   &none  &none  &none  &none  &none  &none  &none  &none    &none &none &none         &none &none
-        &none     &none  &none  &none  &none  &none  &none  &none  &none &none &none   &none   &none &none
-        &none &none &none            &none                &none    &none  &none &none &none &none &none
+        &trans &kp C_MUTE &kp C_VOL_DN &kp C_VOL_UP &kp C_PREV &kp C_PP &kp C_NEXT &bl BL_CYCLE  &kp C_AL_CALC &macro_screenshot  &kp C_AC_HOME &macro_search &bt BT_CLR &trans &trans &trans &mo 1
+        &trans &trans &trans &trans &trans &trans &trans &trans &trans   &trans &trans &trans &trans &trans
+        &trans   &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans   &trans &trans  &trans &trans &trans &trans
+        &trans   &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans    &trans &trans &trans         &trans &trans
+        &trans     &trans  &trans  &trans  &macro_ver  &bootloader  &trans  &trans  &trans &trans &trans   &trans   &trans &trans
+        &trans &trans &trans            &trans                &trans    &trans  &trans &trans &trans &trans &trans
       >;
     };
   };
