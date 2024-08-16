@@ -19,8 +19,8 @@
          diode-direction = "col2row";
  
          col-gpios
-             = <&shifter 1 GPIO_ACTIVE_HIGH>
-             , <&shifter 0 GPIO_ACTIVE_HIGH>
+             = <&shifter2 1 GPIO_ACTIVE_HIGH>
+             , <&shifter2 0 GPIO_ACTIVE_HIGH>
              , <&gpio0 20 GPIO_ACTIVE_HIGH>
              , <&gpio0 10 GPIO_ACTIVE_HIGH>
              ;
@@ -78,26 +78,26 @@
      led_0: led_0 {
          compatible = "gpio-leds";
          red_led: led_0r {
-             gpios = <&shifter 5 GPIO_ACTIVE_LOW>;
+             gpios = <&shifter2 5 GPIO_ACTIVE_LOW>;
          };
          green_led: led_0g {
-             gpios = <&shifter 7 GPIO_ACTIVE_LOW>;
+             gpios = <&shifter2 7 GPIO_ACTIVE_LOW>;
          };
          blue_led: led_0b {
-             gpios = <&shifter 6 GPIO_ACTIVE_LOW>;
+             gpios = <&shifter2 6 GPIO_ACTIVE_LOW>;
          };
      };
  
      led_1: led_1 {
          compatible = "gpio-leds";
          red_led1: led_1r {
-             gpios = <&shifter 2 GPIO_ACTIVE_LOW>;
+             gpios = <&shifter2 2 GPIO_ACTIVE_LOW>;
          };
          green_led1: led_1g {
-             gpios = <&shifter 4 GPIO_ACTIVE_LOW>;
+             gpios = <&shifter2 4 GPIO_ACTIVE_LOW>;
          };
          blue_led1: led_1b {
-             gpios = <&shifter 3 GPIO_ACTIVE_LOW>;
+             gpios = <&shifter2 3 GPIO_ACTIVE_LOW>;
          };
      };
  
@@ -123,7 +123,7 @@
     pinctrl-1 = <&spi0_sleep>;
     pinctrl-names = "default", "sleep";
     cs-gpios = <&gpio0 31 GPIO_ACTIVE_LOW>;
-	shifter: 595@0 {
+	shifter2: 595@0 {
 		compatible = "zmk,gpio-595";
 		status = "okay";
 		gpio-controller;
