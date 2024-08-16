@@ -114,7 +114,6 @@
 };
 
 /delete-node/ &spi0;
-/delete-node/ &shifter;
 
 &spi0 {
     status = "okay";
