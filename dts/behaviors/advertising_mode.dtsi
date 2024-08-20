@@ -1,0 +1,14 @@
+/*
+ * Copyright (c) 2024 Polarity Works
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+ / {
+    behaviors {
+        adv_mode: adv_mode {
+            compatible = "zmk,behavior-advertising-mode";
+            #binding-cells = <1>;
+        };
+    };
+};
