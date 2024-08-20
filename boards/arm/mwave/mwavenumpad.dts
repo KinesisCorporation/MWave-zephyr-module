@@ -51,7 +51,7 @@
         compatible = "zmk,physical-layout";
         display-name = "LAYOUT";
 
-        kscan = <&kscan_1>;
+        kscan = <&kscan1>;
         transform = <&numpad_transform>;
 
         keys  //                     w   h    x    y     rot    rx    ry
