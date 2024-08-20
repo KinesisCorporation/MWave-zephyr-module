@@ -9,7 +9,7 @@
      compatible = "polarityworks,mwavetest";
  
      chosen {
-         zmk,physical-layout = &physical_layout;
+         zmk,physical-layout = &layout_0;
          zmk,indicators = &led_strip_1;
      };
    kscan1: kscan_1 {
@@ -51,7 +51,7 @@
         compatible = "zmk,physical-layout";
         display-name = "LAYOUT";
 
-        kscan = <&kscan_1>;
+        kscan = <&kscan1>;
         transform = <&numpad_transform>;
 
         keys  //                     w   h    x    y     rot    rx    ry
@@ -113,7 +113,7 @@
      };
 };
 
-/delete-node/ &spi0;
+/delete-node/ &shifter;
 
 &spi0 {
     status = "okay";
