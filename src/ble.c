@@ -33,6 +33,7 @@
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include <zmk/ble.h>
+#include <zmk/ble_add.h>
 #include <zmk/keys.h>
 #include <zmk/split/bluetooth/uuid.h>
 #include <zmk/event_manager.h>
@@ -210,6 +211,28 @@ int update_advertising(void) {
 static void update_advertising_callback(struct k_work *work) { update_advertising(); }
 
 K_WORK_DEFINE(update_advertising_work, update_advertising_callback);
+
+int ble_adv_mode_set(bool mode) {
+    int err=0;
+    if(mode)
+        CHECKED_OPEN_ADV();
+    else
+        CHECKED_ADV_STOP();
+    return 0;
+}
+
+int ble_adv_mode_toggle(void) {
+    switch (advertising_status)
+    {
+    case ZMK_ADV_CONN:
+        return ble_adv_mode_set(false);
+    case ZMK_ADV_NONE:
+        return ble_adv_mode_set(true);
+    
+    default:
+        return -ENOTSUP;
+    }
+}
 
 static void clear_profile_bond(uint8_t profile) {
     if (bt_addr_le_cmp(&profiles[profile].peer, BT_ADDR_LE_ANY)) {

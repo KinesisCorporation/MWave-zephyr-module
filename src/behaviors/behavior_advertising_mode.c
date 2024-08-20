@@ -22,15 +22,12 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
                                      struct zmk_behavior_binding_event event) {
 
     switch (binding->param1) {
-    case EXT_POWER_OFF_CMD:
-        return adv_mode_disable(adv_mode);
-    case EXT_POWER_ON_CMD:
-        return adv_mode_enable(adv_mode);
-    case EXT_POWER_TOGGLE_CMD:
-        if (adv_mode_get(adv_mode) > 0)
-            return adv_mode_disable(adv_mode);
-        else
-            return adv_mode_enable(adv_mode);
+    case ADV_OFF_CMD:
+        return ble_adv_mode_set(false);
+    case ADV_ON_CMD:
+        return ble_adv_mode_set(true);
+    case ADV_TOGGLE_CMD:
+        return ble_adv_mode_toggle();
     default:
         LOG_ERR("Unknown adv_mode command: %d", binding->param1);
     }
