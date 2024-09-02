@@ -24,6 +24,7 @@
     };
 
     endpoint_sideband_behaviors {
+        auto-enable;
         compatible = "zmk,kscan-sideband-behaviors";
         kscan = <&kscan_sp3t_toggle>;
 
