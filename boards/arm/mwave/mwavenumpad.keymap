@@ -48,11 +48,11 @@
     compatible = "zmk,keymap";
     default_layer {
       bindings = <
-        &kp ESC   &kp F1 &kp F2 &kp F3
-        &kp GRAVE &kp N1 &kp N2 &kp N3
-        &kp TAB   &kp Q  &kp W 
-        &kp CLCK  &kp A  &kp S  &kp D 
-            &kp LSHFT    &kp Z  
+        &kp KP_NUMLOCK &kp KP_SLASH &kp KP_ASTERISK &kp KP_SUBTRACT
+        &kp KP_N7      &kp KP_N8    &kp KP_N9       &kp KP_PLUS
+        &kp KP_N4      &kp KP_N5    &kp KP_N6 
+        &kp KP_N1      &kp KP_N2    &kp KP_N3       &kp KP_ENTER 
+               &kp KP_N0            &kp KP_DOT  
       >;
     };
   };
