@@ -12,6 +12,14 @@
          zmk,physical-layout = &layout_0;
          zmk,indicators = &led_strip_1;
      };
+
+     vbatt: vbatt {
+        compatible = "kinesis,battery-voltage-divider";
+        io-channels = <&adc 6>;
+        output-ohms = <3000000>;
+        full-ohms = <(2000000 + 3000000)>;
+        chemistry = <CR2032>;
+    };
    kscan1: kscan_1 {
          compatible = "zmk,kscan-gpio-matrix";
          wakeup-source;

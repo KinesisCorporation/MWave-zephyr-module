@@ -17,6 +17,13 @@
         zmk,matrix-transform = &ansi_transform;
         zmk,indicators = &led_strip_1;
     };
+    vbatt: vbatt {
+        compatible = "kinesis,battery-voltage-divider";
+        io-channels = <&adc 6>;
+        output-ohms = <3000000>;
+        full-ohms = <(2000000 + 3000000)>;
+        chemistry = <ALKALINE>;
+    };
 
     ansi_transform: keymap_transform_0 {
     compatible = "zmk,matrix-transform";
