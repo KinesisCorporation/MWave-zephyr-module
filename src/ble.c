@@ -214,10 +214,12 @@ K_WORK_DEFINE(update_advertising_work, update_advertising_callback);
 
 int ble_adv_mode_set(bool mode) {
     int err=0;
-    if(mode)
+    if(mode) {
         CHECKED_OPEN_ADV();
-    else
+        }
+    else {
         CHECKED_ADV_STOP();
+        }
     return 0;
 }
 
