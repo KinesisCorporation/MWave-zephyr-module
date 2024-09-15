@@ -56,7 +56,7 @@
     compatible = "zmk,keymap";
     default_layer {
       bindings = <
-        &kp KP_NUMLOCK &kp KP_SLASH &kp KP_ASTERISK &kp KP_SUBTRACT
+        &kp KP_NUMLOCK &kp KP_SLASH &kp KP_ASTERISK &bt BT_CLR
         &kp KP_N7      &kp KP_N8    &kp KP_N9       &kp KP_PLUS
         &kp KP_N4      &kp KP_N5    &kp KP_N6 
         &kp KP_N1      &kp KP_N2    &kp KP_N3       &kp KP_ENTER 
