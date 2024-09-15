@@ -7,7 +7,7 @@
  / {
     behaviors {
         adv_mode: adv_mode {
-            compatible = "zmk,advertising-mode";
+            compatible = "zmk,behavior-advertising-mode";
             #binding-cells = <1>;
         };
     };
