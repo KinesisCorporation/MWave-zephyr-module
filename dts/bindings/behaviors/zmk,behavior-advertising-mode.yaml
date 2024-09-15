@@ -3,6 +3,6 @@
 
 description: Advertising mode set
 
-compatible: "zmk,advertising-mode"
+compatible: "zmk,behavior-advertising-mode"
 
 include: one_param.yaml
