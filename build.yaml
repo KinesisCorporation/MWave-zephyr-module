@@ -22,5 +22,3 @@ include:
   - board: mwave_33
   - board: mwavenumpad
     cmake-args: "-DSNIPPET='zmk-usb-logging'"
-  - board: mwavetest_33
-    cmake-args: "-DSNIPPET='zmk-usb-logging'"
