@@ -7,6 +7,7 @@
 #define DT_DRV_COMPAT zmk_behavior_advertising_mode
 
 #include <zephyr/device.h>
+#include <drivers/behavior.h>
 #include <zephyr/devicetree.h>
 
 #include <zmk/ble_add.h>
