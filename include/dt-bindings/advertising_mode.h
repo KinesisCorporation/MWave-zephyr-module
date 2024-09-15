@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#error beanits
-
 #define ADV_OFF_CMD 0
 #define ADV_ON_CMD 1
 #define ADV_TOGGLE_CMD 2
