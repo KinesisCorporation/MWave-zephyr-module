@@ -15,9 +15,6 @@
 #include <zephyr/logging/log.h>
 
 #include <zephyr/drivers/led_strip.h>
-//#include <drivers/ext_power.h>
-
-#include <zmk/stp_indicators.h>
 
 #include <zmk/activity.h>
 #include <zmk/usb.h>
@@ -41,6 +38,18 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #error "A zmk,indicators chosen node must be declared"
 
 #endif
+
+#define ZMK_LED_NUMLOCK_BIT BIT(0)
+#define ZMK_LED_CAPSLOCK_BIT BIT(1)
+#define ZMK_LED_SCROLLLOCK_BIT BIT(2)
+#define ZMK_LED_COMPOSE_BIT BIT(3)
+#define ZMK_LED_KANA_BIT BIT(4)
+
+struct zmk_led_hsb {
+    uint16_t h;
+    uint8_t s;
+    uint8_t b;
+};
 
 #define STRIP_CHOSEN DT_CHOSEN(zmk_indicators)
 #define STRIP_NUM_PIXELS DT_PROP(STRIP_CHOSEN, chain_length)
@@ -300,26 +309,6 @@ k_timer_start(&battery_timeout_timer, K_SECONDS(5), K_NO_WAIT);
 
 // Define timers for blinking and led timeout
 K_TIMER_DEFINE(battery_low_timer, zmk_stp_indicators_battery_low_timer_handler, NULL);
-
-int zmk_stp_indicators_enable_batt() {
-    // Stop blinking timers
-    k_timer_stop(&slow_blink_timer);
-    k_timer_stop(&fast_blink_timer);
-    k_timer_stop(&connected_timeout_timer);
-    // Set battery flag to prevent other things overriding
-    battery = true;
-    // Submit battery work to queue
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &battery_ind_work);
-    return 0;
-}
-int zmk_stp_indicators_disable_batt() {
-    // Unset battery flag to allow other events to override
-    battery = false;
-    // Submit works to update both LEDs
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
-    return 0;
-}
 
 static int zmk_stp_indicators_init(void) {
 
