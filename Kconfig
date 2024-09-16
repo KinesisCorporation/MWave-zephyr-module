@@ -1,1 +1,33 @@
 rsource "drivers/Kconfig"
+
+menuconfig ZMK_STP_INDICATORS
+    bool "STP Specific indicators"
+    select LED_STRIP
+    select ZMK_LOW_PRIORITY_WORK_QUEUE
+    select ZMK_HID_INDICATORS
+
+if ZMK_STP_INDICATORS
+
+config SPI
+    default y
+
+config ZMK_STP_INDICATORS_KEYPAD
+    bool "enable numpad specific LED code"
+
+config ZMK_STP_INDICATORS_SWITCH_LEDS
+    bool "Swap LED0 and LED1"
+
+config ZMK_STP_INDICATORS_COLOR_CAPS
+    bool "illuminate caps LED with profile LED color"
+
+config ZMK_STP_INDICATORS_BRT_MAX
+    int "RGB underglow maximum brightness in percent"
+    range 0 100
+    default 100
+
+config ZMK_STP_INDICATORS_BATTERY_THRESHOLD
+    int "When we decide battery low"
+    range 0 100
+    default 10
+    
+endif

@@ -21,4 +21,13 @@ if (CONFIG_ZMK_BLE)
     zephyr_library_sources(src/behaviors/behavior_advertising_mode.c)
 endif()
 
+if (CONFIG_ZMK_STP_INDICATORS)
+    if(CONFIG_ZMK_STP_INDICATORS_KEYPAD)
+        zephyr_library_sources(src/keypad_indicators.c)
+    else()
+        zephyr_library_sources(src/mwave_indicators.c)
+    endif()
+
+endif()
+
 add_subdirectory(drivers)

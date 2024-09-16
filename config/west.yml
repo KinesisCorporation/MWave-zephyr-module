@@ -14,8 +14,5 @@ manifest:
     - name: gpio-rgb-zephyr-module
       remote: refil
       revision: main
-    - name: form-indicators-zephyr-module
-      remote: refil
-      revision: main
   self:
     path: config
