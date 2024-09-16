@@ -70,6 +70,7 @@ static struct zmk_led_hsb color1; // LED1
 static struct zmk_stp_ble ble_status;
 static bool caps;
 static bool usb;
+static bool battery;
 
 static bool on;
 
@@ -220,7 +221,6 @@ static void zmk_stp_indicators_caps(struct k_work *work) {
 }
 
 // Define work to update LEDs
-K_WORK_DEFINE(battery_ind_work, zmk_stp_indicators_batt);
 K_WORK_DEFINE(bluetooth_ind_work, zmk_stp_indicators_bluetooth);
 K_WORK_DEFINE(caps_ind_work, zmk_stp_indicators_caps);
 
@@ -258,21 +258,21 @@ static void zmk_stp_indicators_battery_blink_handler(struct k_timer *timer) {
 K_TIMER_DEFINE(battery_blink_timer, zmk_stp_indicators_battery_blink_handler, NULL);
 
 static void zmk_stp_indicators_battery_timer_handler(struct k_timer *timer) {
-//do some battery stuf here  
-battery = false;
-k_timer_stop(&battery_blink_timer); 
-k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
+    //do some battery stuf here  
+    battery = false;
+    k_timer_stop(&battery_blink_timer); 
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
 }
 
 // Define timers for blinking and led timeout
 K_TIMER_DEFINE(battery_timeout_timer, zmk_stp_indicators_battery_timer_handler, NULL);
 
 static void zmk_stp_indicators_battery_low_timer_handler(struct k_timer *timer) {
-//do some battery stuf here
-battery = true;
-k_timer_start(&battery_blink_timer, K_NO_WAIT, K_MSEC(750));
-k_timer_start(&battery_timeout_timer, K_SECONDS(5), K_NO_WAIT);
+    //do some battery stuf here
+    battery = true;
+    k_timer_start(&battery_blink_timer, K_NO_WAIT, K_MSEC(750));
+    k_timer_start(&battery_timeout_timer, K_SECONDS(5), K_NO_WAIT);
 }
 
 // Define timers for blinking and led timeout

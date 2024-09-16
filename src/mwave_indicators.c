@@ -252,7 +252,6 @@ static void zmk_stp_indicators_caps(struct k_work *work) {
 }
 
 // Define work to update LEDs
-K_WORK_DEFINE(battery_ind_work, zmk_stp_indicators_batt);
 K_WORK_DEFINE(bluetooth_ind_work, zmk_stp_indicators_bluetooth);
 K_WORK_DEFINE(caps_ind_work, zmk_stp_indicators_caps);
 
