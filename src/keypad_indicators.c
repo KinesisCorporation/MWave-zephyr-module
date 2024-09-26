@@ -68,7 +68,7 @@ static struct zmk_led_hsb color0; // LED0
 static struct zmk_led_hsb color1; // LED1
 
 static struct zmk_stp_ble ble_status;
-static bool caps;
+static bool numl;
 static bool usb;
 static bool battery;
 
@@ -204,10 +204,10 @@ static void zmk_stp_indicators_bluetooth(struct k_work *work) {
     }
 }
 
-static void zmk_stp_indicators_caps(struct k_work *work) {
+static void zmk_stp_indicators_numl(struct k_work *work) {
     color1.s = 0;
-    // Set LED on if capslock pressed
-    if (caps)
+    // Set LED on if numllock pressed
+    if (numl)
         color1.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
     else
         color1.b = 0;
@@ -222,7 +222,7 @@ static void zmk_stp_indicators_caps(struct k_work *work) {
 
 // Define work to update LEDs
 K_WORK_DEFINE(bluetooth_ind_work, zmk_stp_indicators_bluetooth);
-K_WORK_DEFINE(caps_ind_work, zmk_stp_indicators_caps);
+K_WORK_DEFINE(numl_ind_work, zmk_stp_indicators_numl);
 
 static void zmk_stp_indicators_battery_blink_work(struct k_work *work) {
     LOG_DBG("Blink work triggered");
@@ -262,7 +262,7 @@ static void zmk_stp_indicators_battery_timer_handler(struct k_timer *timer) {
     battery = false;
     k_timer_stop(&battery_blink_timer); 
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
 }
 
 // Define timers for blinking and led timeout
@@ -301,14 +301,14 @@ static int zmk_stp_indicators_init(void) {
         open : zmk_ble_active_profile_is_open(),
         connected : zmk_ble_active_profile_is_connected()
     };
-    caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
+    numl = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
     usb = false;
     battery = false;
 
     on = true;
 
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
 
     return 0;
 }
@@ -318,7 +318,7 @@ int zmk_stp_indicators_on() {
         return -ENODEV;
 
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
 
     return 0;
 }
@@ -372,12 +372,12 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
         usb = (zmk_endpoint_instance_to_index(zmk_endpoints_selected())==0);
         LOG_DBG("ENDPOINT EVENT: %d", usb);
 
-        caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
+        numl = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
         //  Update LEDs
         //
         if (!battery) {
             k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
+            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
         }
         return 0;
     }
@@ -385,25 +385,25 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
     // If BLE state changed
     if (as_zmk_ble_active_profile_changed(eh)) {
         LOG_DBG("BLE CHANGE LOGGED");
-        // Get BLE information, Caps state and set local flags
+        // Get BLE information, Numl state and set local flags
         ble_status.connected = zmk_ble_active_profile_is_connected();
         ble_status.open = zmk_ble_active_profile_is_open();
         ble_status.prof = zmk_ble_active_profile_index();
-        caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
+        numl = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
         // Update LEDs
         if (!battery) {
             k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
+            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
         }
         return 0;
     }
 
     if (as_zmk_hid_indicators_changed(eh)) {
         // Get new HID state, set local flags
-        caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
-        LOG_DBG("INDICATOR CHANGED: %d", caps);
+        numl = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
+        LOG_DBG("INDICATOR CHANGED: %d", numl);
         if (!battery) {
-            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
+            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
             // k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
         }
         return 0;
