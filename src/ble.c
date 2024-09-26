@@ -221,7 +221,7 @@ int ble_adv_mode_set(bool mode) {
             }
         }
     else {
-        if(advertising_status != ZMK_ADV_NONE)
+        if(advertising_status != ZMK_ADV_NONE){
             for(int i=0; i<ZMK_BLE_PROFILE_COUNT; i++) {
                 err = zmk_ble_prof_disconnect(i);
                 if(err) {
@@ -230,6 +230,7 @@ int ble_adv_mode_set(bool mode) {
                 }
             CHECKED_ADV_STOP();
             }
+        }
     return 0;
 }
 
