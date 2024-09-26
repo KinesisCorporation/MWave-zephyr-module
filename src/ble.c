@@ -214,12 +214,22 @@ K_WORK_DEFINE(update_advertising_work, update_advertising_callback);
 
 int ble_adv_mode_set(bool mode) {
     int err=0;
+
     if(mode) {
-        CHECKED_OPEN_ADV();
+        if(advertising_status != ZMK_ADV_CONN){
+            CHECKED_OPEN_ADV();
+            }
         }
     else {
-        CHECKED_ADV_STOP();
-        }
+        if(advertising_status != ZMK_ADV_NONE)
+            for(int i=0; i<ZMK_BLE_PROFILE_COUNT; i++) {
+                err = zmk_ble_prof_disconnect(i);
+                if(err) {
+                    LOG_DBG("Failed to disconnect profile %d : %d", i, err);
+                    }
+                }
+            CHECKED_ADV_STOP();
+            }
     return 0;
 }
 

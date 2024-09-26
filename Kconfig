@@ -28,6 +28,6 @@ config ZMK_STP_INDICATORS_BRT_MAX
 config ZMK_STP_INDICATORS_BATTERY_THRESHOLD
     int "When we decide battery low"
     range 0 100
-    default 10
+    default 20
     
 endif

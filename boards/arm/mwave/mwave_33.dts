@@ -87,7 +87,14 @@
              gpios = <&shifter 8 GPIO_ACTIVE_LOW>;
          };
      };
- 
+
+    ind_leds {
+        compatible = "gpio-leds";
+        capsled: caps_led {
+            gpios = <&shifter 0 GPIO_ACTIVE_LOW>;
+        };
+    };
+
      led_strip_1: gpio_led_strip {
          compatible = "zmk,gpio-led-strip";
          chain-length = <2>;
