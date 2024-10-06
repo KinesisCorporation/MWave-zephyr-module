@@ -217,11 +217,13 @@ int ble_adv_mode_set(bool mode) {
 
     if(mode) {
         if(advertising_status != ZMK_ADV_CONN){
+            LOG_DBG("enabling adv");
             CHECKED_OPEN_ADV();
             }
         }
     else {
         if(advertising_status != ZMK_ADV_NONE){
+            LOG_DBG("Disabling adv");
             for(int i=0; i<ZMK_BLE_PROFILE_COUNT; i++) {
                 err = zmk_ble_prof_disconnect(i);
                 if(err) {
