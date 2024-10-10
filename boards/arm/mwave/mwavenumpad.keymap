@@ -3,7 +3,7 @@
 #include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/outputs.h>
 #include <dt-bindings/zmk/backlight.h>
-#include <dt-bindings/advertising_mode.h>
+// #include <dt-bindings/advertising_mode.h>
 
 #include <behaviors/advertising_mode.dtsi>
 
@@ -12,17 +12,17 @@
     ZMK_MACRO(usb_conn,
         wait-ms = <1>;
         tap-ms = <1>;
-        bindings = <&out OUT_USB &adv_mode ADV_OFF>;
+        bindings = <&out OUT_USB &bt ADV_OFF>;
     )
     ZMK_MACRO(ble_zero,
         wait-ms = <1>;
         tap-ms = <1>;
-        bindings = <&out OUT_BLE &bt BT_SEL 0 &adv_mode ADV_ON>;
+        bindings = <&out OUT_BLE &bt BT_SEL 0 &bt ADV_ON>;
     )
     ZMK_MACRO(ble_one,
         wait-ms = <1>;
         tap-ms = <1>;
-        bindings = <&out OUT_BLE &bt BT_SEL 1 &adv_mode ADV_ON>;
+        bindings = <&out OUT_BLE &bt BT_SEL 1 &bt ADV_ON>;
     )
     macro_ver: macro_ver {
       compatible = "zmk,behavior-macro";
