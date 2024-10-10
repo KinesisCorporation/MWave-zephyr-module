@@ -64,6 +64,8 @@ enum advertising_type {
 static struct zmk_ble_profile profiles[ZMK_BLE_PROFILE_COUNT];
 static uint8_t active_profile;
 
+static bool permit_adv;
+
 #define DEVICE_NAME CONFIG_BT_DEVICE_NAME
 #define DEVICE_NAME_LEN (sizeof(DEVICE_NAME) - 1)
 
@@ -169,9 +171,9 @@ int update_advertising(void) {
     struct bt_conn *conn;
     enum advertising_type desired_adv = ZMK_ADV_NONE;
 
-    if (zmk_ble_active_profile_is_open()) {
+    if (permit_adv && zmk_ble_active_profile_is_open()) {
         desired_adv = ZMK_ADV_CONN;
-    } else if (!zmk_ble_active_profile_is_connected()) {
+    } else if (permit_adv && !zmk_ble_active_profile_is_connected()) {
         desired_adv = ZMK_ADV_CONN;
         // Need to fix directed advertising for privacy centrals. See
         // https://github.com/zephyrproject-rtos/zephyr/pull/14984 char
@@ -213,24 +215,24 @@ static void update_advertising_callback(struct k_work *work) { update_advertisin
 K_WORK_DEFINE(update_advertising_work, update_advertising_callback);
 
 int ble_adv_mode_set(bool mode) {
-    int err=0;
-
     if(mode) {
         if(advertising_status != ZMK_ADV_CONN){
+            permit_adv = true;
             LOG_DBG("enabling adv");
-            CHECKED_OPEN_ADV();
             }
+            update_advertising();
         }
     else {
         if(advertising_status != ZMK_ADV_NONE){
-            LOG_DBG("Disabling adv");
+            permit_adv = false;
+            LOG_DBG("Disabling adv and disconnecting");
             for(int i=0; i<ZMK_BLE_PROFILE_COUNT; i++) {
-                err = zmk_ble_prof_disconnect(i);
+                int err = zmk_ble_prof_disconnect(i);
                 if(err) {
                     LOG_DBG("Failed to disconnect profile %d : %d", i, err);
                     }
                 }
-            CHECKED_ADV_STOP();
+            update_advertising();
             }
         }
     return 0;
@@ -728,6 +730,7 @@ static int zmk_ble_complete_startup(void) {
 }
 
 static int zmk_ble_init(void) {
+    permit_adv = true;
     int err = bt_enable(NULL);
 
     if (err < 0 && err != -EALREADY) {
