@@ -1,0 +1,129 @@
+/ {
+    macros {
+        Win_Cut: Windows_Cut {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LC(X)>;
+            display-name = "Windows Cut";
+        };
+
+        Win_Copy: Windows_Copy {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LC(C)>;
+            display-name = "Windows Copy";
+        };
+
+        Win_Paste: Windows_Paste {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LC(V)>;
+            display-name = "Windows Paste";
+        };
+
+        Win_SelAll: Windows_SelectAll {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LC(A)>;
+            display-name = "Windows Select All";
+        };
+
+        Win_Undo: Windows_Undo {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LC(A)>;
+            display-name = "Windows Undo";
+        };
+
+        Win_LastWin: Win_AltTab {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LA(TAB)>;
+            display-name = "Windows Alt+Tab";
+        };
+
+        Win_Desktp: Win_Desk {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(D)>;
+            display-name = "Windows Desktop";
+        };
+
+        Win_Explr: Win_Explr {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(E)>;
+            display-name = "Windows Explorer";
+        };
+
+        Win_Snip: Win_Snip {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LS(LG(S))>;
+            display-name = "Windows Screen Snip";
+        };
+
+        Win_ShowAW: Win_ShowAW {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(S)>;
+            display-name = "Windows Show All Windows";
+        };
+
+        Mac_Cut: Mac_Cut {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(X)>;
+            display-name = "Mac Cut";
+        };
+
+        Mac_Copy: Mac_Copy {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(C)>;
+            display-name = "Mac Copy";
+        };
+
+        Mac_Paste: Mac_Paste {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(V)>;
+            display-name = "Mac Paste";
+        };
+
+        Mac_Undo: Mac_Undo {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(V)>;
+            display-name = "Mac Undo";
+        };
+
+        Mac_SelAll: Mac_SelAll {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(A)>;
+            display-name = "Mac Select All";
+        };
+
+        Mac_LastWin: Mac_LastWin {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LG(TAB)>;
+            display-name = "Mac Last Window";
+        };
+
+        Mac_MissC: Mac_ShowAW {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LC(UP_ARROW)>;
+            display-name = "Mac Show All Windoes";
+        };
+
+        Mac_Snip: Mac_Snip {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&kp LC(LG(LS(NUMBER_4)))>;
+            display-name = "Mac Screen Snip";
+        };
+    };
+};
