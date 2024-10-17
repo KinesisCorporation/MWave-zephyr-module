@@ -298,13 +298,14 @@ static void zmk_mwave_indicators_layer(struct k_work *work) {
 }
 
 static void zmk_mwave_indicators_caps(struct k_work *work) {
+    int err = 0;
     if (caps)
-        led_on(caps_led, 0);
+        err = led_on(caps_led, 0);
     else
-        led_off(caps_led, 0);
+        err = led_off(caps_led, 0);
     
     if (err < 0) {
-        LOG_ERR("Failed to update the RGB strip (%d)", err);
+        LOG_ERR("Failed to update the led (%d)", err);
     }
 }
 
