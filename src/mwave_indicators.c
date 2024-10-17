@@ -15,18 +15,22 @@
 #include <zephyr/logging/log.h>
 
 #include <zephyr/drivers/led_strip.h>
+#include <zephyr/drivers/led.h>
 
 #include <zmk/activity.h>
 #include <zmk/usb.h>
 #include <zmk/ble.h>
 #include <zmk/battery.h>
 #include <zmk/hid_indicators.h>
+#include <zmk/keymap.h>
 #include <zmk/event_manager.h>
 #include <zmk/events/activity_state_changed.h>
 #include <zmk/events/endpoint_changed.h>
 #include <zmk/events/ble_active_profile_changed.h>
 #include <zmk/events/hid_indicators_changed.h>
+#include <zmk/events/layer_state_changed.h>
 #include <zmk/events/battery_state_changed.h>
+#include <zmk/events/usb_conn_state_changed.h>
 #include <zmk/endpoints.h>
 
 #include <zmk/workqueue.h>
@@ -36,6 +40,12 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #if !DT_HAS_CHOSEN(zmk_indicators)
 
 #error "A zmk,indicators chosen node must be declared"
+
+#endif
+
+#if !DT_HAS_CHOSEN(zmk_caps_led)
+
+#error "A zmk,caps-led chosen node must be declared"
 
 #endif
 
@@ -53,12 +63,20 @@ struct zmk_led_hsb {
 
 #define STRIP_CHOSEN DT_CHOSEN(zmk_indicators)
 #define STRIP_NUM_PIXELS DT_PROP(STRIP_CHOSEN, chain_length)
+#define CAPS_LED DT_CHOSEN(zmk_caps_led)
 
 #define HUE_MAX 360
 #define SAT_MAX 100
 #define BRT_MAX 100
 
-struct zmk_stp_ble {
+#define LED_RGB(hex)                                                                               \
+    ((struct led_rgb){                                                                             \
+        r : (((hex)&0xFF0000) >> 16),                                   \
+        g : (((hex)&0x00FF00) >> 8),                                    \
+        b : (((hex)&0x0000FF) >> 0)                                     \
+    })
+
+struct zmk_mwave_ble {
     uint8_t prof;
     bool open;
     bool connected;
@@ -67,14 +85,21 @@ struct zmk_stp_ble {
 static struct zmk_led_hsb color0; // LED0
 static struct zmk_led_hsb color1; // LED1
 
-static struct zmk_stp_ble ble_status;
+static const struct led_rgb LAYER_COLORS[8] = {
+    LED_RGB(0x000000), LED_RGB(0xFFFFFF), LED_RGB(0x0000FF), LED_RGB(0x00FF00),
+    LED_RGB(0xFF0000), LED_RGB(0xFF00FF), LED_RGB(0x00FFFF), LED_RGB(0xFFFF00)};
+
+static struct zmk_mwave_ble ble_status;
+static uint8_t layer;
 static bool caps;
+static bool num;
 static bool usb;
 static bool battery;
 
 static bool on;
 
 static const struct device *led_strip;
+static const struct device *caps_led;
 
 static struct led_rgb pixels[STRIP_NUM_PIXELS];
 
@@ -127,7 +152,7 @@ static struct led_rgb hsb_to_rgb(struct zmk_led_hsb hsb) {
     return rgb;
 }
 
-static void zmk_stp_indicators_batt(struct k_work *work) {
+static void zmk_mwave_indicators_batt(struct k_work *work) {
     // Get state of charge
     uint8_t soc = zmk_battery_state_of_charge();
     LOG_DBG("State of charge: %d", soc);
@@ -158,7 +183,7 @@ static void zmk_stp_indicators_batt(struct k_work *work) {
     }
 }
 
-static void zmk_stp_indicators_blink_work(struct k_work *work) {
+static void zmk_mwave_indicators_blink_work(struct k_work *work) {
     LOG_DBG("Blink work triggered");
     // If LED on turn off and vice cersa
     if (color0.b)
@@ -173,18 +198,18 @@ static void zmk_stp_indicators_blink_work(struct k_work *work) {
     }
 }
 
-K_WORK_DEFINE(blink_work, zmk_stp_indicators_blink_work);
+K_WORK_DEFINE(blink_work, zmk_mwave_indicators_blink_work);
 
-static void zmk_stp_indicators_blink_handler(struct k_timer *timer) {
+static void zmk_mwave_indicators_blink_handler(struct k_timer *timer) {
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &blink_work);
 }
 
 // Define timers for blinking and led timeout
-K_TIMER_DEFINE(fast_blink_timer, zmk_stp_indicators_blink_handler, NULL);
-K_TIMER_DEFINE(slow_blink_timer, zmk_stp_indicators_blink_handler, NULL);
-K_TIMER_DEFINE(connected_timeout_timer, zmk_stp_indicators_blink_handler, NULL);
+K_TIMER_DEFINE(fast_blink_timer, zmk_mwave_indicators_blink_handler, NULL);
+K_TIMER_DEFINE(slow_blink_timer, zmk_mwave_indicators_blink_handler, NULL);
+K_TIMER_DEFINE(connected_timeout_timer, zmk_mwave_indicators_blink_handler, NULL);
 
-static void zmk_stp_indicators_bluetooth(struct k_work *work) {
+static void zmk_mwave_indicators_bluetooth(struct k_work *work) {
     // Set LED to blue if profile one, set sat to 0 if profile 0 (white)
     LOG_DBG("BLE PROFILE: %d", ble_status.prof);
     color0.h = 240;
@@ -235,15 +260,36 @@ static void zmk_stp_indicators_bluetooth(struct k_work *work) {
     }
 }
 
-static void zmk_stp_indicators_caps(struct k_work *work) {
-    color1.s = 0;
-    // Set LED on if capslock pressed
-    if (caps)
-        color1.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
+static void zmk_mwave_indicators_layer_blink_work(struct k_work *work) {
+    LOG_DBG("Blink work triggered");
+    // Do cursed blinkhacking
+        pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1] =
+        (pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1].r ||
+         pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1].b ||
+         pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1].g)
+            ? LAYER_COLORS[layer]
+            : LED_RGB(0x000000);
+    int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
+    if (err < 0) {
+        LOG_ERR("Failed to update the RGB strip (%d)", err);
+    }
+}
+
+K_WORK_DEFINE(num_ind_work, zmk_mwave_indicators_layer_blink_work);
+
+static void zmk_mwave_indicators_num_blink_handler(struct k_timer *timer) {
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &num_ind_work);
+}
+
+// Define timers for blinking and led timeout
+K_TIMER_DEFINE(num_blink_timer, zmk_mwave_indicators_num_blink_handler, NULL);
+
+static void zmk_mwave_indicators_layer(struct k_work *work) {
+    if(num)
+        k_timer_start(&num_blink_timer, K_NO_WAIT, K_MSEC(750));
     else
-        color1.b = 0;
-    // Convert HSB to RGB and update the LEDs
-    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1] = hsb_to_rgb(color1);
+        k_timer_stop(&num_blink_timer);
+    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1] = LAYER_COLORS[layer];
     LOG_DBG("Setting LED:%d", IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1);
     int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
     if (err < 0) {
@@ -251,11 +297,23 @@ static void zmk_stp_indicators_caps(struct k_work *work) {
     }
 }
 
-// Define work to update LEDs
-K_WORK_DEFINE(bluetooth_ind_work, zmk_stp_indicators_bluetooth);
-K_WORK_DEFINE(caps_ind_work, zmk_stp_indicators_caps);
+static void zmk_mwave_indicators_caps(struct k_work *work) {
+    if (caps)
+        led_on(caps_led, 0);
+    else
+        led_off(caps_led, 0);
+    
+    if (err < 0) {
+        LOG_ERR("Failed to update the RGB strip (%d)", err);
+    }
+}
 
-static void zmk_stp_indicators_battery_blink_work(struct k_work *work) {
+// Define work to update LEDs
+K_WORK_DEFINE(bluetooth_ind_work, zmk_mwave_indicators_bluetooth);
+K_WORK_DEFINE(layer_ind_work, zmk_mwave_indicators_layer);
+K_WORK_DEFINE(caps_ind_work, zmk_mwave_indicators_caps);
+
+static void zmk_mwave_indicators_battery_blink_work(struct k_work *work) {
     LOG_DBG("Blink work triggered");
     // If LED on turn off and vice cersa
     color0.h = 0;
@@ -279,27 +337,27 @@ static void zmk_stp_indicators_battery_blink_work(struct k_work *work) {
     }
 }
 
-K_WORK_DEFINE(battery_blink_work, zmk_stp_indicators_battery_blink_work);
+K_WORK_DEFINE(battery_blink_work, zmk_mwave_indicators_battery_blink_work);
 
-static void zmk_stp_indicators_battery_blink_handler(struct k_timer *timer) {
+static void zmk_mwave_indicators_battery_blink_handler(struct k_timer *timer) {
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &battery_blink_work);
 }
 
 // Define timers for blinking and led timeout
-K_TIMER_DEFINE(battery_blink_timer, zmk_stp_indicators_battery_blink_handler, NULL);
+K_TIMER_DEFINE(battery_blink_timer, zmk_mwave_indicators_battery_blink_handler, NULL);
 
-static void zmk_stp_indicators_battery_timer_handler(struct k_timer *timer) {
+static void zmk_mwave_indicators_battery_timer_handler(struct k_timer *timer) {
 //do some battery stuf here  
 battery = false;
 k_timer_stop(&battery_blink_timer); 
 k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
+            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
 }
 
 // Define timers for blinking and led timeout
-K_TIMER_DEFINE(battery_timeout_timer, zmk_stp_indicators_battery_timer_handler, NULL);
+K_TIMER_DEFINE(battery_timeout_timer, zmk_mwave_indicators_battery_timer_handler, NULL);
 
-static void zmk_stp_indicators_battery_low_timer_handler(struct k_timer *timer) {
+static void zmk_mwave_indicators_battery_low_timer_handler(struct k_timer *timer) {
 //do some battery stuf here
 battery = true;
 k_timer_start(&battery_blink_timer, K_NO_WAIT, K_MSEC(750));
@@ -307,13 +365,18 @@ k_timer_start(&battery_timeout_timer, K_SECONDS(5), K_NO_WAIT);
 }
 
 // Define timers for blinking and led timeout
-K_TIMER_DEFINE(battery_low_timer, zmk_stp_indicators_battery_low_timer_handler, NULL);
+K_TIMER_DEFINE(battery_low_timer, zmk_mwave_indicators_battery_low_timer_handler, NULL);
 
-static int zmk_stp_indicators_init(void) {
+static int zmk_mwave_indicators_init(void) {
 
     LOG_DBG("Initialising STP indicators");
 
     led_strip = DEVICE_DT_GET(STRIP_CHOSEN);
+    caps_led = DEVICE_DT_GET(CAPS_LED);
+
+    if (!device_is_ready(caps_led)) {
+		LOG_ERR("Device %s is not ready", caps_led->name);
+	}
 
     color0 = (struct zmk_led_hsb){
         h : 240,
@@ -327,44 +390,48 @@ static int zmk_stp_indicators_init(void) {
         b : CONFIG_ZMK_STP_INDICATORS_BRT_MAX,
     };
 
-    ble_status = (struct zmk_stp_ble){
+    ble_status = (struct zmk_mwave_ble){
         prof : zmk_ble_active_profile_index(),
         open : zmk_ble_active_profile_is_open(),
         connected : zmk_ble_active_profile_is_connected()
     };
     caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
+    num = caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
     usb = false;
     battery = false;
 
     on = true;
 
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
 
     return 0;
 }
 
-int zmk_stp_indicators_on() {
+int zmk_mwave_indicators_on() {
     if (!led_strip)
         return -ENODEV;
 
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
 
     return 0;
 }
 
-static void zmk_stp_indicators_off_handler(struct k_work *work) {
+static void zmk_mwave_indicators_off_handler(struct k_work *work) {
     for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
         pixels[i] = (struct led_rgb){r : 0, g : 0, b : 0};
     }
 
     led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
+    led_off 
 }
 
-K_WORK_DEFINE(underglow_off_work, zmk_stp_indicators_off_handler);
+K_WORK_DEFINE(underglow_off_work, zmk_mwave_indicators_off_handler);
 
-int zmk_stp_indicators_off() {
+int zmk_mwave_indicators_off() {
     if (!led_strip)
         return -ENODEV;
 
@@ -374,26 +441,26 @@ int zmk_stp_indicators_off() {
     return 0;
 }
 
-static int stp_indicators_auto_state(bool *prev_state, bool new_state) {
+static int mwave_indicators_auto_state(bool *prev_state, bool new_state) {
     if (on == new_state) {
         return 0;
     }
     if (new_state) {
         on = *prev_state;
         *prev_state = false;
-        return zmk_stp_indicators_on();
+        return zmk_mwave_indicators_on();
     } else {
         on = false;
         *prev_state = true;
-        return zmk_stp_indicators_off();
+        return zmk_usb_is_powered() ? 0 : zmk_mwave_indicators_off();
     }
 }
 
-static int stp_indicators_event_listener(const zmk_event_t *eh) {
+static int mwave_indicators_event_listener(const zmk_event_t *eh) {
     // If going idle or waking up
     if (as_zmk_activity_state_changed(eh)) {
         static bool prev_state = false;
-        return stp_indicators_auto_state(&prev_state,
+        return mwave_indicators_auto_state(&prev_state,
                                          zmk_activity_get_state() == ZMK_ACTIVITY_ACTIVE);
     }
     // If USB state changed
@@ -432,12 +499,23 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
     if (as_zmk_hid_indicators_changed(eh)) {
         // Get new HID state, set local flags
         caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
-        LOG_DBG("INDICATOR CHANGED: %d", caps);
+        num = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
+        LOG_DBG("INDICATOR CHANGED, caps: %d, num %d", caps, num);
+        k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
         if (!battery) {
-            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
+            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
             // k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
         }
         return 0;
+    }
+
+    if (as_zmk_layer_state_changed(eh)) {
+        // Get new layer state, set local flags
+        layer = zmk_keymap_highest_layer_active();
+        if (!battery) {
+            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
+            // k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+        }
     }
 
     if (as_zmk_battery_state_changed(eh)) {
@@ -455,15 +533,17 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
         }
         return 0;
     }
+
     return -ENOTSUP;
 }
 
-ZMK_LISTENER(stp_indicators, stp_indicators_event_listener);
+ZMK_LISTENER(mwave_indicators, mwave_indicators_event_listener);
 
-ZMK_SUBSCRIPTION(stp_indicators, zmk_activity_state_changed);
-ZMK_SUBSCRIPTION(stp_indicators, zmk_endpoint_changed);
-ZMK_SUBSCRIPTION(stp_indicators, zmk_ble_active_profile_changed);
-ZMK_SUBSCRIPTION(stp_indicators, zmk_hid_indicators_changed);
-ZMK_SUBSCRIPTION(stp_indicators, zmk_battery_state_changed);
+ZMK_SUBSCRIPTION(mwave_indicators, zmk_activity_state_changed);
+ZMK_SUBSCRIPTION(mwave_indicators, zmk_endpoint_changed);
+ZMK_SUBSCRIPTION(mwave_indicators, zmk_ble_active_profile_changed);
+ZMK_SUBSCRIPTION(mwave_indicators, zmk_hid_indicators_changed);
+ZMK_SUBSCRIPTION(mwave_indicators, zmk_battery_state_changed);
+ZMK_SUBSCRIPTION(mwave_indicators, zmk_layer_state_changed);
 
-SYS_INIT(zmk_stp_indicators_init, POST_KERNEL, CONFIG_APPLICATION_INIT_PRIORITY);
+SYS_INIT(zmk_mwave_indicators_init, POST_KERNEL, CONFIG_APPLICATION_INIT_PRIORITY);
