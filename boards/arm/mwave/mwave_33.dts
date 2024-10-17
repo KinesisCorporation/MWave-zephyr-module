@@ -17,6 +17,7 @@
      chosen {
          zmk,physical-layout = &physical_layout;
          zmk,indicators = &led_strip_1;
+         zmk,caps-led = &ind_leds;
      };
 
      vbatt: vbatt {
@@ -88,7 +89,7 @@
          };
      };
 
-    ind_leds {
+    ind_leds: ind_leds {
         compatible = "gpio-leds";
         capsled: caps_led {
             gpios = <&shifter 0 GPIO_ACTIVE_LOW>;
