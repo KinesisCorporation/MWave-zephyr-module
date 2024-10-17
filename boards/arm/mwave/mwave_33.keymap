@@ -53,6 +53,12 @@
       #binding-cells = <0>;
       bindings = <&kp RET>;
     };
+    keypad_00: keypad_00 {
+      compatible = "zmk,behavior-macro";
+      #binding-cells = <0>;
+      bindings = <&kp KP_N0 &kp KP_N0>;
+      label = "KEYPAD_00";
+  };
     };
 
     endpoint_sideband_behaviors {
