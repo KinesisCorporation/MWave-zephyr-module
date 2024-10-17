@@ -427,7 +427,7 @@ static void zmk_mwave_indicators_off_handler(struct k_work *work) {
     }
 
     led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
-    led_off 
+    led_off(caps_led, 0);
 }
 
 K_WORK_DEFINE(underglow_off_work, zmk_mwave_indicators_off_handler);
