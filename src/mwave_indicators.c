@@ -468,7 +468,7 @@ static int mwave_indicators_event_listener(const zmk_event_t *eh) {
     if (as_zmk_endpoint_changed(eh)) {
 
         // Get new USB state, HID state and set local flags
-        usb = (zmk_endpoints_preferred().transport==ZMK_ENDPOINT_USB);
+        usb = (zmk_endpoints_preferred().transport==ZMK_TRANSPORT_USB);
         LOG_DBG("ENDPOINT EVENT: %d", usb);
 
         caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
