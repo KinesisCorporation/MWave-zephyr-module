@@ -28,6 +28,7 @@
 #include <zmk/events/hid_indicators_changed.h>
 #include <zmk/events/battery_state_changed.h>
 #include <zmk/endpoints.h>
+#include <zmk/endpoint_types.h>
 
 #include <zmk/workqueue.h>
 
@@ -369,7 +370,7 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
     if (as_zmk_endpoint_changed(eh)) {
 
         // Get new USB state, HID state and set local flags
-        usb = (zmk_endpoint_instance_to_index(zmk_endpoints_selected())==0);
+        usb = (zmk_endpoints_preferred().transport==ZMK_ENDPOINT_USB);
         LOG_DBG("ENDPOINT EVENT: %d", usb);
 
         numl = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
