@@ -355,7 +355,7 @@ static int stp_indicators_auto_state(bool *prev_state, bool new_state) {
     } else {
         on = false;
         *prev_state = true;
-        return zmk_stp_indicators_off();
+        return zmk_usb_is_powered() ? 0 : zmk_stp_indicators_off();
     }
 }
 
