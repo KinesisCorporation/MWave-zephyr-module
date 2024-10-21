@@ -28,7 +28,6 @@
 #include <zmk/events/hid_indicators_changed.h>
 #include <zmk/events/battery_state_changed.h>
 #include <zmk/endpoints.h>
-#include <zmk/endpoint_types.h>
 
 #include <zmk/workqueue.h>
 
