@@ -223,17 +223,16 @@ int ble_adv_mode_set(bool mode) {
             update_advertising();
         }
     else {
-        if(advertising_status != ZMK_ADV_NONE){
-            permit_adv = false;
-            LOG_DBG("Disabling adv and disconnecting");
-            for(int i=0; i<ZMK_BLE_PROFILE_COUNT; i++) {
-                int err = zmk_ble_prof_disconnect(i);
-                if(err) {
-                    LOG_DBG("Failed to disconnect profile %d : %d", i, err);
-                    }
+        //We don't check for current advertising state as if it's currently connected it won't be advertising
+        permit_adv = false;
+        LOG_DBG("Disabling adv and disconnecting");
+        for(int i=0; i<ZMK_BLE_PROFILE_COUNT; i++) {
+            int err = zmk_ble_prof_disconnect(i);
+            if(err) {
+                LOG_DBG("Failed to disconnect profile %d : %d", i, err);
                 }
-            update_advertising();
             }
+        update_advertising();
         }
     return 0;
 }
