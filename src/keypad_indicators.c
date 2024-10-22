@@ -192,7 +192,8 @@ static void zmk_stp_indicators_bluetooth(struct k_work *work) {
         color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
         k_timer_stop(&slow_blink_timer);
         k_timer_stop(&fast_blink_timer);
-        k_timer_start(&connected_timeout_timer, K_SECONDS(3), K_NO_WAIT);
+        if(!zmk_usb_is_powered())
+            k_timer_start(&connected_timeout_timer, K_SECONDS(3), K_NO_WAIT);
     }
     // Convert HSB to RGB and update the LEDs
 
