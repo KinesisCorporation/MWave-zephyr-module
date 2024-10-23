@@ -303,7 +303,7 @@ static int zmk_stp_indicators_init(void) {
         connected : zmk_ble_active_profile_is_connected()
     };
     numl = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
-    usb = false;
+    usb = (zmk_endpoints_preferred().transport==ZMK_TRANSPORT_USB);;
     battery = false;
 
     on = true;
