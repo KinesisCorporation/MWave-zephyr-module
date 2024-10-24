@@ -248,7 +248,8 @@ static void zmk_mwave_indicators_bluetooth(struct k_work *work) {
         color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
         k_timer_stop(&slow_blink_timer);
         k_timer_stop(&fast_blink_timer);
-        k_timer_start(&connected_timeout_timer, K_SECONDS(3), K_NO_WAIT);
+        if(!zmk_usb_is_powered())
+            k_timer_start(&connected_timeout_timer, K_SECONDS(3), K_NO_WAIT);
     }
     // Convert HSB to RGB and update the LEDs
 
@@ -397,8 +398,8 @@ static int zmk_mwave_indicators_init(void) {
         connected : zmk_ble_active_profile_is_connected()
     };
     caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
-    num = caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
-    usb = false;
+    num = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
+    usb = (zmk_endpoints_preferred().transport==ZMK_TRANSPORT_USB);
     battery = false;
 
     on = true;
