@@ -264,12 +264,16 @@ static void zmk_mwave_indicators_bluetooth(struct k_work *work) {
 static void zmk_mwave_indicators_layer_blink_work(struct k_work *work) {
     LOG_DBG("Blink work triggered");
     // Do cursed blinkhacking
-        pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1] =
-        (pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1].r ||
-         pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1].b ||
-         pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1].g)
-            ? LAYER_COLORS[layer]
-            : LED_RGB(0x000000);
+    //    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1] =
+    //    (pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1].r ||
+    //     pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1].b ||
+    //     pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1].g)
+    //        ? LAYER_COLORS[layer]
+    //        : LED_RGB(0x000000);
+    if((pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1].r != 0) || (pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1].g != 0) || (pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1].b != 0) )
+        pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1] = LED_RGB(0x000000);
+    else
+        pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1] = LAYER_COLORS(layer);
     int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
     if (err < 0) {
         LOG_ERR("Failed to update the RGB strip (%d)", err);
@@ -518,6 +522,7 @@ static int mwave_indicators_event_listener(const zmk_event_t *eh) {
             k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
             // k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
         }
+        return 0;
     }
 
     if (as_zmk_battery_state_changed(eh)) {
