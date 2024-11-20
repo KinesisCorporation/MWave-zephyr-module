@@ -290,10 +290,10 @@ static void zmk_mwave_indicators_num_blink_handler(struct k_timer *timer) {
 K_TIMER_DEFINE(num_blink_timer, zmk_mwave_indicators_num_blink_handler, NULL);
 
 static void zmk_mwave_indicators_layer(struct k_work *work) {
+    k_timer_stop(&num_blink_timer);
     if(num)
         k_timer_start(&num_blink_timer, K_NO_WAIT, K_MSEC(750));
-    else
-        k_timer_stop(&num_blink_timer);
+        
     pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1] = LAYER_COLORS[layer];
     LOG_DBG("Setting LED:%d", IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1);
     int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
