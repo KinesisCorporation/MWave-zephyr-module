@@ -21,6 +21,16 @@ if (CONFIG_ZMK_BLE)
     zephyr_library_sources(src/behaviors/behavior_advertising_mode.c)
 endif()
 
+
+# Hook and replace standard kscan_sideband_behaviors.c with our one
+if (CONFIG_ZMK_KSCAN_SIDEBAND_BEHAVIORS)
+    set_source_files_properties(
+            ${APPLICATION_SOURCE_DIR}/src/kscan_sideband_behaviors.c
+            TARGET_DIRECTORY app
+            PROPERTIES HEADER_FILE_ONLY ON)
+        zephyr_library_sources(src/kscan_sideband_behaviors.c)
+endif()
+
 if (CONFIG_ZMK_STP_INDICATORS)
     if(CONFIG_ZMK_STP_INDICATORS_KEYPAD)
         zephyr_library_sources(src/keypad_indicators.c)
