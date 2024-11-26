@@ -403,7 +403,7 @@ static int zmk_mwave_indicators_init(void) {
     };
     caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
     num = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
-    usb = (zmk_endpoints_preferred().transport==ZMK_TRANSPORT_USB);
+    usb = false;
     battery = false;
 
     on = true;
