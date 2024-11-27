@@ -553,4 +553,4 @@ ZMK_SUBSCRIPTION(mwave_indicators, zmk_hid_indicators_changed);
 ZMK_SUBSCRIPTION(mwave_indicators, zmk_battery_state_changed);
 ZMK_SUBSCRIPTION(mwave_indicators, zmk_layer_state_changed);
 
-SYS_INIT(zmk_mwave_indicators_init, APPLICATION, 99);
+SYS_INIT(zmk_mwave_indicators_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
