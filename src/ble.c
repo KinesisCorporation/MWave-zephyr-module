@@ -521,10 +521,10 @@ static void connected(struct bt_conn *conn, uint8_t err) {
 
     update_advertising();
 
-    if (is_conn_active_profile(conn)) {
-        LOG_DBG("Active profile connected");
+    //if (is_conn_active_profile(conn)) {
+    //    LOG_DBG("Active profile connected");
         k_work_submit(&raise_profile_changed_event_work);
-    }
+    //}
 }
 
 static void disconnected(struct bt_conn *conn, uint8_t reason) {
@@ -546,10 +546,10 @@ static void disconnected(struct bt_conn *conn, uint8_t reason) {
     // connection for a profile as active, and not start advertising yet.
     k_work_submit(&update_advertising_work);
 
-    if (is_conn_active_profile(conn)) {
-        LOG_DBG("Active profile disconnected");
+    //if (is_conn_active_profile(conn)) {
+    //    LOG_DBG("Active profile disconnected");
         k_work_submit(&raise_profile_changed_event_work);
-    }
+    //}
 }
 
 static void security_changed(struct bt_conn *conn, bt_security_t level, enum bt_security_err err) {
