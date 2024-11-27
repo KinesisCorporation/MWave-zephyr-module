@@ -31,6 +31,12 @@ if (CONFIG_ZMK_KSCAN_SIDEBAND_BEHAVIORS)
         zephyr_library_sources(src/kscan_sideband_behaviors.c)
 endif()
 
+set_source_files_properties(
+    ${APPLICATION_SOURCE_DIR}/src/endpoints.c
+    TARGET_DIRECTORY app
+    PROPERTIES HEADER_FILE_ONLY ON)
+zephyr_library_sources(src/endpoints.c)
+
 if (CONFIG_ZMK_STP_INDICATORS)
     if(CONFIG_ZMK_STP_INDICATORS_KEYPAD)
         zephyr_library_sources(src/keypad_indicators.c)
