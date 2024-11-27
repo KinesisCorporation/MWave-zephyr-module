@@ -489,7 +489,6 @@ static int mwave_indicators_event_listener(const zmk_event_t *eh) {
     // If BLE state changed
     if (as_zmk_ble_active_profile_changed(eh)) {
         LOG_DBG("BLE CHANGE LOGGED");
-        usb = (zmk_endpoints_preferred().transport==ZMK_TRANSPORT_USB);
         // Get BLE information, Caps state and set local flags
         ble_status.connected = zmk_ble_active_profile_is_connected();
         ble_status.open = zmk_ble_active_profile_is_open();
