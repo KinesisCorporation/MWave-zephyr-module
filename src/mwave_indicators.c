@@ -290,9 +290,11 @@ static void zmk_mwave_indicators_num_blink_handler(struct k_timer *timer) {
 K_TIMER_DEFINE(num_blink_timer, zmk_mwave_indicators_num_blink_handler, NULL);
 
 static void zmk_mwave_indicators_layer(struct k_work *work) {
-    k_timer_stop(&num_blink_timer);
-    if(num)
+
+    if(!num)
         k_timer_start(&num_blink_timer, K_NO_WAIT, K_MSEC(750));
+    else   
+        k_timer_stop(&num_blink_timer);
         
     pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1] = LAYER_COLORS[layer];
     LOG_DBG("Setting LED:%d", IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1);
@@ -481,6 +483,7 @@ static int mwave_indicators_event_listener(const zmk_event_t *eh) {
         //
         if (!battery) {
             k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
             k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
         }
         return 0;
@@ -497,6 +500,7 @@ static int mwave_indicators_event_listener(const zmk_event_t *eh) {
         // Update LEDs
         if (!battery) {
             k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
             k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
         }
         return 0;
