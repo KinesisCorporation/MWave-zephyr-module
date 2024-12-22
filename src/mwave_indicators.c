@@ -291,7 +291,7 @@ K_TIMER_DEFINE(num_blink_timer, zmk_mwave_indicators_num_blink_handler, NULL);
 
 static void zmk_mwave_indicators_layer(struct k_work *work) {
 
-    if(!num)
+    if(!num && (layer!=0))
         k_timer_start(&num_blink_timer, K_NO_WAIT, K_MSEC(750));
     else   
         k_timer_stop(&num_blink_timer);
