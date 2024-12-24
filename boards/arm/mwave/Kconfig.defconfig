@@ -8,7 +8,7 @@ config BOARD
     default "mwavenumpad" if BOARD_MWAVENUMPAD
     
 config ZMK_KEYBOARD_NAME
-    default "M-Wave"
+    default "mWave"
 
 if BOARD_MWAVE_33 || BOARD_MWAVETEST_33 || BOARD_MWAVETEST_20 || BOARD_MWAVENUMPAD
 
