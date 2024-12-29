@@ -223,7 +223,7 @@ static void zmk_mwave_indicators_bluetooth(struct k_work *work) {
         // Stop all timers
         k_timer_stop(&slow_blink_timer);
         k_timer_stop(&fast_blink_timer);
-        k_timer_stop(&connected_timeout_timer);
+        k_timer_start(&connected_timeout_timer, K_SECONDS(3), K_NO_WAIT);
         // Set LED to green
         color0.h = 120;
         color0.s = 100;
