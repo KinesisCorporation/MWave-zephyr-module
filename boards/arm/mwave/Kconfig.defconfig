@@ -25,4 +25,13 @@ endif # USB
 config BT_CTLR
     default BT
 
+if ZMK_STUDIO
+config ZMK_STUDIO_RPC_RX_BUF_SIZE
+    default 128
+
+config ZMK_STUDIO_RPC_TX_BUF_SIZE
+    default 256
+
+endif
+
 endif # BOARD_MWAVE_33 || BOARD_MWAVETEST_33 || BOARD_MWAVETEST_20 || BOARD_MWAVENUMPAD
