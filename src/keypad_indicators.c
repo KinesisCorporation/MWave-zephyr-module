@@ -303,7 +303,7 @@ static int zmk_stp_indicators_init(void) {
         connected : zmk_ble_active_profile_is_connected()
     };
     numl = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
-    usb = (zmk_endpoints_preferred().transport==ZMK_TRANSPORT_USB);
+    usb = false;
     battery = false;
 
     on = true;
@@ -402,7 +402,7 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
     if (as_zmk_hid_indicators_changed(eh)) {
         // Get new HID state, set local flags
         numl = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
-        LOG_DBG("INDICATOR CHANGED: %d", numl);
+        LOG_DBG("INDICATOR CHANGED, num %d", numl);
         if (!battery) {
             k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
             // k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
