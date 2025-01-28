@@ -14,7 +14,7 @@
 
 / {
     model = "lcp";
-    compatible = "polarityworks,lcp";
+    compatible = "kinesis,lcp";
 
     chosen {
         zephyr,code-partition = &code_partition;

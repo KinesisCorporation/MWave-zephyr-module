@@ -10,7 +10,7 @@
 
 / {
     model = "mwavetest";
-    compatible = "polarityworks,mwavetest";
+    compatible = "kinesis,mwavetest";
 
     chosen {
         zmk,kscan = &kscan1;

@@ -12,7 +12,7 @@
 
  / {
      model = "mwavetest";
-     compatible = "polarityworks,mwavetest";
+     compatible = "kinesis,mwavetest";
  
      chosen {
          zmk,physical-layout = &layout_0;
@@ -66,26 +66,26 @@
      led_0: led_0 {
          compatible = "gpio-leds";
          red_led: led_0r {
-             gpios = <&shifter 13 GPIO_ACTIVE_LOW>;
+             gpios = <&shifter 11 GPIO_ACTIVE_LOW>;
          };
          green_led: led_0g {
              gpios = <&shifter 12 GPIO_ACTIVE_LOW>;
          };
          blue_led: led_0b {
-             gpios = <&shifter 11 GPIO_ACTIVE_LOW>;
+             gpios = <&shifter 13 GPIO_ACTIVE_LOW>;
          };
      };
  
      led_1: led_1 {
          compatible = "gpio-leds";
          red_led1: led_1r {
-             gpios = <&shifter 10 GPIO_ACTIVE_LOW>;
+             gpios = <&shifter 8 GPIO_ACTIVE_LOW>;
          };
          green_led1: led_1g {
              gpios = <&shifter 9 GPIO_ACTIVE_LOW>;
          };
          blue_led1: led_1b {
-             gpios = <&shifter 8 GPIO_ACTIVE_LOW>;
+             gpios = <&shifter 10 GPIO_ACTIVE_LOW>;
          };
      };
 
