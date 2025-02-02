@@ -375,14 +375,19 @@ k_timer_start(&battery_timeout_timer, K_SECONDS(5), K_NO_WAIT);
 // Define timers for blinking and led timeout
 K_TIMER_DEFINE(battery_low_timer, zmk_mwave_indicators_battery_low_timer_handler, NULL);
 
+void zmk_mwave_indicators_resample(){
+    ble_status.connected = zmk_ble_active_profile_is_connected();
+    ble_status.open = zmk_ble_active_profile_is_open();
+    ble_status.prof = zmk_ble_active_profile_index();
+    caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
+    num = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
+}
+
 static void zmk_mwave_indicators_resample_work(struct k_work *work) {
     LOG_DBG("Resample work triggered");
-    ble_status.connected = zmk_ble_active_profile_is_connected();
-        ble_status.open = zmk_ble_active_profile_is_open();
-        ble_status.prof = zmk_ble_active_profile_index();
-
-        k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-
+    zmk_mwave_indicators_resample();
 }
 
 K_WORK_DELAYABLE_DEFINE(resample_work, zmk_mwave_indicators_resample_work);
