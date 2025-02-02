@@ -717,7 +717,6 @@ static int zmk_ble_init(void) {
 
 #if IS_ENABLED(CONFIG_SETTINGS)
     settings_register(&profiles_handler);
-    k_work_init_delayable(&ble_save_work, ble_save_profile_work);
 #else
     zmk_ble_complete_startup();
 #endif
