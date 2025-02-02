@@ -288,20 +288,8 @@ int zmk_ble_profile_index(const bt_addr_le_t *addr) {
     return -ENODEV;
 }
 
-#if IS_ENABLED(CONFIG_SETTINGS)
-static void ble_save_profile_work(struct k_work *work) {
-    settings_save_one("ble/active_profile", &active_profile, sizeof(active_profile));
-}
-
-static struct k_work_delayable ble_save_work;
-#endif
-
 static int ble_save_profile(void) {
-#if IS_ENABLED(CONFIG_SETTINGS)
-    return k_work_reschedule(&ble_save_work, K_MSEC(CONFIG_ZMK_SETTINGS_SAVE_DEBOUNCE));
-#else
     return 0;
-#endif
 }
 
 int zmk_ble_prof_select(uint8_t index) {
@@ -452,17 +440,7 @@ static int ble_profiles_handle_set(const char *name, size_t len, settings_read_c
         bt_addr_le_to_str(&profiles[idx].peer, addr_str, sizeof(addr_str));
 
         LOG_DBG("Loaded %s address for profile %d", addr_str, idx);
-    } else if (settings_name_steq(name, "active_profile", &next) && !next) {
-        if (len != sizeof(active_profile)) {
-            return -EINVAL;
-        }
-
-        int err = read_cb(cb_arg, &active_profile, sizeof(active_profile));
-        if (err <= 0) {
-            LOG_ERR("Failed to handle active profile from settings (err %d)", err);
-            return err;
-        }
-    }
+    } 
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
     else if (settings_name_steq(name, "peripheral_addresses", &next) && next) {
         if (len != sizeof(bt_addr_le_t)) {
