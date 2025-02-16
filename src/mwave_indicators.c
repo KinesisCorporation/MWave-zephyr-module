@@ -379,7 +379,7 @@ void zmk_mwave_indicators_resample(){
     ble_status.connected = zmk_ble_active_profile_is_connected();
     ble_status.open = zmk_ble_active_profile_is_open();
     ble_status.prof = zmk_ble_active_profile_index();
-            usb = (zmk_endpoints_preferred().transport==ZMK_TRANSPORT_USB);
+    usb = (zmk_endpoints_preferred().transport==ZMK_TRANSPORT_USB);
 
     caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
     num = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
