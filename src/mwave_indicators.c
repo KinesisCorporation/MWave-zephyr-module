@@ -427,10 +427,6 @@ static int zmk_mwave_indicators_init(void) {
 
     on = true;
 
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
-
     k_work_schedule(&resample_work, K_MSEC(500));
 
     return 0;
