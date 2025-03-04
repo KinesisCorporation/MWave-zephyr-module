@@ -10,8 +10,8 @@
  #include <drivers/behavior.h>
  #include <zephyr/logging/log.h>
  
- #include <dt-bindings/zmk/stp.h>
- #include <zmk/rgb_underglow.h>
+ #include <dt-bindings/stp.h>
+ #include <zmk/indicators.h>
  #include <zmk/keymap.h>
  
  LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
