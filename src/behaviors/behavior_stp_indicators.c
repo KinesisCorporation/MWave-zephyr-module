@@ -40,20 +40,19 @@
  static int behavior_stp_indicators_init(const struct device *dev) { return 0; }
  
  static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
-                                      struct zmk_behavior_binding_event event) {
+    struct zmk_behavior_binding_event event) {
      switch (binding->param1) {
      case STP_BAT:
-         return zmk_rgb_underglow_select_effect(5);
+        return zmk_stp_indicators_enable_batt();
      }
- 
      return -ENOTSUP;
  }
- 
- static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
-                                       struct zmk_behavior_binding_event event) {
+
+static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
+     struct zmk_behavior_binding_event event) {
      switch (binding->param1) {
      case STP_BAT:
-         return zmk_rgb_underglow_select_effect(4);
+        return zmk_stp_indicators_disable_batt();
      }
      return ZMK_BEHAVIOR_OPAQUE;
  }
