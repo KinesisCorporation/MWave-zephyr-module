@@ -28,6 +28,7 @@
 #include <zmk/events/hid_indicators_changed.h>
 #include <zmk/events/battery_state_changed.h>
 #include <zmk/endpoints.h>
+#include <zmk/indicators.h>
 
 #include <zmk/workqueue.h>
 
@@ -125,6 +126,59 @@ static struct led_rgb hsb_to_rgb(struct zmk_led_hsb hsb) {
     struct led_rgb rgb = {r : r * 255, g : g * 255, b : b * 255};
 
     return rgb;
+}
+
+static void zmk_stp_indicators_batt(struct k_work *work) {
+    // Get state of charge
+    uint8_t soc = zmk_battery_state_of_charge();
+    LOG_DBG("State of charge: %d", soc);
+    struct led_rgb rgb;
+    if (soc > 80) {
+        rgb.r = 0;
+        rgb.g = 255;
+        rgb.b = 0;
+    } else if (soc > 50 && soc < 80) {
+        rgb.r = 255;
+        rgb.g = 255;
+        rgb.b = 0;
+    } else if (soc > 20 && soc < 51) {
+        rgb.r = 255;
+        rgb.g = 140;
+        rgb.b = 0;
+    } else {
+        rgb.r = 255;
+        rgb.g = 0;
+        rgb.b = 0;
+    }
+    for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
+        pixels[i] = rgb;
+    }
+    int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
+    if (err < 0) {
+        LOG_ERR("Failed to update the RGB strip (%d)", err);
+    }
+}
+
+K_WORK_DEFINE(battery_ind_work, zmk_stp_indicators_batt);
+
+int zmk_stp_indicators_enable_batt() {
+    // Stop blinking timers
+    k_timer_stop(&slow_blink_timer);
+    k_timer_stop(&fast_blink_timer);
+    k_timer_stop(&connected_timeout_timer);
+    // Set battery flag to prevent other things overriding
+    battery = true;
+    // Submit battery work to queue
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &battery_ind_work);
+    return 0;
+}
+int zmk_stp_indicators_disable_batt() {
+    // Unset battery flag to allow other events to override
+    battery = false;
+    // Submit works to update both LEDs
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
+    return 0;
 }
 
 static void zmk_stp_indicators_blink_work(struct k_work *work) {
@@ -279,6 +333,25 @@ static void zmk_stp_indicators_battery_low_timer_handler(struct k_timer *timer) 
 // Define timers for blinking and led timeout
 K_TIMER_DEFINE(battery_low_timer, zmk_stp_indicators_battery_low_timer_handler, NULL);
 
+void zmk_stp_indicators_resample(){
+    ble_status.connected = zmk_ble_active_profile_is_connected();
+    ble_status.open = zmk_ble_active_profile_is_open();
+    ble_status.prof = zmk_ble_active_profile_index();
+    usb = (zmk_endpoints_preferred().transport==ZMK_TRANSPORT_USB);
+
+    numl = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
+}
+
+static void zmk_stp_indicators_resample_work(struct k_work *work) {
+    LOG_DBG("Resample work triggered");
+    zmk_stp_indicators_resample();
+}
+
+K_WORK_DELAYABLE_DEFINE(resample_work, zmk_stp_indicators_resample_work);
+
+
 static int zmk_stp_indicators_init(void) {
 
     LOG_DBG("Initialising STP indicators");
@@ -308,8 +381,7 @@ static int zmk_stp_indicators_init(void) {
 
     on = true;
 
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
+    k_work_schedule(&resample_work, K_MSEC(500));
 
     return 0;
 }

@@ -32,6 +32,7 @@
 #include <zmk/events/battery_state_changed.h>
 #include <zmk/events/usb_conn_state_changed.h>
 #include <zmk/endpoints.h>
+#include <zmk/indicators.h>
 
 #include <zmk/workqueue.h>
 
@@ -152,7 +153,7 @@ static struct led_rgb hsb_to_rgb(struct zmk_led_hsb hsb) {
     return rgb;
 }
 
-static void zmk_mwave_indicators_batt(struct k_work *work) {
+static void zmk_stp_indicators_batt(struct k_work *work) {
     // Get state of charge
     uint8_t soc = zmk_battery_state_of_charge();
     LOG_DBG("State of charge: %d", soc);
@@ -181,6 +182,28 @@ static void zmk_mwave_indicators_batt(struct k_work *work) {
     if (err < 0) {
         LOG_ERR("Failed to update the RGB strip (%d)", err);
     }
+}
+
+K_WORK_DEFINE(battery_ind_work, zmk_stp_indicators_batt);
+
+int zmk_stp_indicators_enable_batt() {
+    // Stop blinking timers
+    k_timer_stop(&slow_blink_timer);
+    k_timer_stop(&fast_blink_timer);
+    k_timer_stop(&connected_timeout_timer);
+    // Set battery flag to prevent other things overriding
+    battery = true;
+    // Submit battery work to queue
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &battery_ind_work);
+    return 0;
+}
+int zmk_stp_indicators_disable_batt() {
+    // Unset battery flag to allow other events to override
+    battery = false;
+    // Submit works to update both LEDs
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
+    return 0;
 }
 
 static void zmk_mwave_indicators_blink_work(struct k_work *work) {

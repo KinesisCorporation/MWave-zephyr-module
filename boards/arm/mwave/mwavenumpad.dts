@@ -18,7 +18,7 @@
         io-channels = <&adc 6>;
         output-ohms = <3000000>;
         full-ohms = <(2000000 + 3000000)>;
-        chemistry = <CR2032>;
+        chemistry = <ALKALINE>;
     };
    kscan1: kscan_1 {
          compatible = "zmk,kscan-gpio-matrix";
@@ -89,10 +89,10 @@
              gpios = <&shifter2 5 GPIO_ACTIVE_LOW>;
          };
          green_led: led_0g {
-             gpios = <&shifter2 7 GPIO_ACTIVE_LOW>;
+             gpios = <&shifter2 6 GPIO_ACTIVE_LOW>;
          };
          blue_led: led_0b {
-             gpios = <&shifter2 6 GPIO_ACTIVE_LOW>;
+             gpios = <&shifter2 7 GPIO_ACTIVE_LOW>;
          };
      };
  
@@ -102,10 +102,10 @@
              gpios = <&shifter2 2 GPIO_ACTIVE_LOW>;
          };
          green_led1: led_1g {
-             gpios = <&shifter2 4 GPIO_ACTIVE_LOW>;
+             gpios = <&shifter2 3 GPIO_ACTIVE_LOW>;
          };
          blue_led1: led_1b {
-             gpios = <&shifter2 3 GPIO_ACTIVE_LOW>;
+             gpios = <&shifter2 4 GPIO_ACTIVE_LOW>;
          };
      };
  
