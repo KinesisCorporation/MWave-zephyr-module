@@ -161,26 +161,6 @@ static void zmk_stp_indicators_batt(struct k_work *work) {
 
 K_WORK_DEFINE(battery_ind_work, zmk_stp_indicators_batt);
 
-int zmk_stp_indicators_enable_batt() {
-    // Stop blinking timers
-    k_timer_stop(&slow_blink_timer);
-    k_timer_stop(&fast_blink_timer);
-    k_timer_stop(&connected_timeout_timer);
-    // Set battery flag to prevent other things overriding
-    battery = true;
-    // Submit battery work to queue
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &battery_ind_work);
-    return 0;
-}
-int zmk_stp_indicators_disable_batt() {
-    // Unset battery flag to allow other events to override
-    battery = false;
-    // Submit works to update both LEDs
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
-    return 0;
-}
-
 static void zmk_stp_indicators_blink_work(struct k_work *work) {
     LOG_DBG("Blink work triggered");
     // If LED on turn off and vice cersa
@@ -351,6 +331,25 @@ static void zmk_stp_indicators_resample_work(struct k_work *work) {
 
 K_WORK_DELAYABLE_DEFINE(resample_work, zmk_stp_indicators_resample_work);
 
+int zmk_stp_indicators_enable_batt() {
+    // Stop blinking timers
+    k_timer_stop(&slow_blink_timer);
+    k_timer_stop(&fast_blink_timer);
+    k_timer_stop(&connected_timeout_timer);
+    // Set battery flag to prevent other things overriding
+    battery = true;
+    // Submit battery work to queue
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &battery_ind_work);
+    return 0;
+}
+int zmk_stp_indicators_disable_batt() {
+    // Unset battery flag to allow other events to override
+    battery = false;
+    // Submit works to update both LEDs
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
+    return 0;
+}
 
 static int zmk_stp_indicators_init(void) {
 
