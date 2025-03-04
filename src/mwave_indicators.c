@@ -340,7 +340,8 @@ int zmk_stp_indicators_disable_batt() {
     battery = false;
     // Submit works to update both LEDs
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
+
     return 0;
 }
 
