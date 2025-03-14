@@ -11,83 +11,84 @@
  #include <physical_layouts.dtsi>
 
  / {
-     model = "mwavetest";
-     compatible = "kinesis,mwavetest";
- 
-     chosen {
-         zmk,physical-layout = &layout_0;
-         zmk,indicators = &led_strip_1;
-         zmk,caps-led = &ind_leds;
-     };
+    model = "mwave";
+    compatible = "kinesis,mwave";
 
-     vbatt: vbatt {
-        compatible = "kinesis,battery-voltage-divider";
-        io-channels = <&adc 6>;
-        output-ohms = <3000000>;
-        full-ohms = <(2000000 + 3000000)>;
-        chemistry = <ALKALINE>;
+    chosen {
+        zmk,physical-layout = &layout_0;
+        zmk,indicators = &led_strip_1;
+        zmk,caps-led = &ind_leds;
     };
-   kscan1: kscan_1 {
-         compatible = "zmk,kscan-gpio-matrix";
-         wakeup-source;
+
+    vbatt: vbatt {
+    compatible = "kinesis,battery-voltage-divider";
+    io-channels = <&adc 6>;
+    output-ohms = <3000000>;
+    full-ohms = <(2000000 + 3000000)>;
+    chemistry = <ALKALINE>;
+    };
+
+    kscan1: kscan_1 {
+        compatible = "zmk,kscan-gpio-matrix";
+        wakeup-source;
+
+        diode-direction = "col2row";
+
+        col-gpios
+            = <&shifter 1 GPIO_ACTIVE_HIGH>
+            , <&shifter 2 GPIO_ACTIVE_HIGH>
+            , <&shifter 3 GPIO_ACTIVE_HIGH>
+            , <&shifter 4 GPIO_ACTIVE_HIGH>
+            , <&shifter 5 GPIO_ACTIVE_HIGH>
+            , <&shifter 6 GPIO_ACTIVE_HIGH>
+            , <&shifter 7 GPIO_ACTIVE_HIGH>
+            , <&shifter 15 GPIO_ACTIVE_HIGH>
+            , <&shifter 14 GPIO_ACTIVE_HIGH>
+            , <&shifter 16 GPIO_ACTIVE_HIGH>
+            , <&shifter 17 GPIO_ACTIVE_HIGH>
+            , <&shifter 18 GPIO_ACTIVE_HIGH>
+            , <&shifter 19 GPIO_ACTIVE_HIGH>
+            , <&shifter 20 GPIO_ACTIVE_HIGH>
+            , <&shifter 21 GPIO_ACTIVE_HIGH>
+            , <&shifter 22 GPIO_ACTIVE_HIGH>
+            , <&shifter 23 GPIO_ACTIVE_HIGH>
+            ;
+
+        row-gpios
+            = <&gpio0 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            , <&gpio0 17 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            , <&gpio0 20 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            , <&gpio0 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            , <&gpio1 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            ;
+    };
  
-         diode-direction = "col2row";
+    led_0: led_0 {
+        compatible = "gpio-leds";
+        red_led: led_0r {
+            gpios = <&shifter 11 GPIO_ACTIVE_LOW>;
+        };
+        green_led: led_0g {
+            gpios = <&shifter 12 GPIO_ACTIVE_LOW>;
+        };
+        blue_led: led_0b {
+            gpios = <&shifter 13 GPIO_ACTIVE_LOW>;
+        };
+    };
  
-         col-gpios
-             = <&shifter 1 GPIO_ACTIVE_HIGH>
-             , <&shifter 2 GPIO_ACTIVE_HIGH>
-             , <&shifter 3 GPIO_ACTIVE_HIGH>
-             , <&shifter 4 GPIO_ACTIVE_HIGH>
-             , <&shifter 5 GPIO_ACTIVE_HIGH>
-             , <&shifter 6 GPIO_ACTIVE_HIGH>
-             , <&shifter 7 GPIO_ACTIVE_HIGH>
-             , <&shifter 15 GPIO_ACTIVE_HIGH>
-             , <&shifter 14 GPIO_ACTIVE_HIGH>
-             , <&shifter 16 GPIO_ACTIVE_HIGH>
-             , <&shifter 17 GPIO_ACTIVE_HIGH>
-             , <&shifter 18 GPIO_ACTIVE_HIGH>
-             , <&shifter 19 GPIO_ACTIVE_HIGH>
-             , <&shifter 20 GPIO_ACTIVE_HIGH>
-             , <&shifter 21 GPIO_ACTIVE_HIGH>
-             , <&shifter 22 GPIO_ACTIVE_HIGH>
-             , <&shifter 23 GPIO_ACTIVE_HIGH>
-             ;
- 
-         row-gpios
-             = <&gpio0 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-             , <&gpio0 17 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-             , <&gpio0 20 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-             , <&gpio0 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-             , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-             , <&gpio1 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-             ;
-     };
- 
-     led_0: led_0 {
-         compatible = "gpio-leds";
-         red_led: led_0r {
-             gpios = <&shifter 11 GPIO_ACTIVE_LOW>;
-         };
-         green_led: led_0g {
-             gpios = <&shifter 12 GPIO_ACTIVE_LOW>;
-         };
-         blue_led: led_0b {
-             gpios = <&shifter 13 GPIO_ACTIVE_LOW>;
-         };
-     };
- 
-     led_1: led_1 {
-         compatible = "gpio-leds";
-         red_led1: led_1r {
-             gpios = <&shifter 8 GPIO_ACTIVE_LOW>;
-         };
-         green_led1: led_1g {
-             gpios = <&shifter 9 GPIO_ACTIVE_LOW>;
-         };
-         blue_led1: led_1b {
-             gpios = <&shifter 10 GPIO_ACTIVE_LOW>;
-         };
-     };
+    led_1: led_1 {
+        compatible = "gpio-leds";
+        red_led1: led_1r {
+            gpios = <&shifter 8 GPIO_ACTIVE_LOW>;
+        };
+        green_led1: led_1g {
+            gpios = <&shifter 9 GPIO_ACTIVE_LOW>;
+        };
+        blue_led1: led_1b {
+            gpios = <&shifter 10 GPIO_ACTIVE_LOW>;
+        };
+    };
 
     ind_leds: ind_leds {
         compatible = "gpio-leds";
@@ -96,17 +97,18 @@
         };
     };
 
-     led_strip_1: gpio_led_strip {
-         compatible = "zmk,gpio-led-strip";
-         chain-length = <2>;
-         led-0 {
-             led = <&led_0>;
-         };
-         led-1 {
-             led = <&led_1>;
-         };
-     };
-     layout_0: layout_0 {
+    led_strip_1: gpio_led_strip {
+        compatible = "zmk,gpio-led-strip";
+        chain-length = <2>;
+        led-0 {
+            led = <&led_0>;
+        };
+        led-1 {
+            led = <&led_1>;
+        };
+    };
+
+    layout_0: layout_0 {
         compatible = "zmk,physical-layout";
         display-name = "ANSI Layout";
 
