@@ -389,7 +389,7 @@ int zmk_stp_indicators_on() {
     if (!led_strip)
         return -ENODEV;
 
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+    //k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
 
     return 0;

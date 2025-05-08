@@ -462,7 +462,7 @@ int zmk_mwave_indicators_on() {
     if (!led_strip)
         return -ENODEV;
 
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+    //k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
 
