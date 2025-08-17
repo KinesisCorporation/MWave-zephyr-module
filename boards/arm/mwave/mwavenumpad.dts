@@ -13,7 +13,7 @@
          zmk,indicators = &led_strip_1;
      };
 
-     vbatt: vbatt {
+    vbatt: vbatt {
         compatible = "kinesis,battery-voltage-divider";
         io-channels = <&adc 6>;
         output-ohms = <3000000>;
