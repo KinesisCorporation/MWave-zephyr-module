@@ -8,50 +8,6 @@
 #include <behaviors/advertising_mode.dtsi>
 
 / {
-  macros {
-    ZMK_MACRO(usb_conn,
-        wait-ms = <1>;
-        tap-ms = <1>;
-        bindings = <&out OUT_USB &adv_mode ADV_OFF>;
-    )
-    ZMK_MACRO(ble_zero,
-        wait-ms = <1>;
-        tap-ms = <1>;
-        bindings = <&out OUT_BLE &bt BT_SEL 0 &adv_mode ADV_ON>;
-    )
-    ZMK_MACRO(ble_one,
-        wait-ms = <1>;
-        tap-ms = <1>;
-        bindings = <&out OUT_BLE &bt BT_SEL 1 &adv_mode ADV_ON>;
-    )
-    macro_ver: macro_ver {
-      compatible = "zmk,behavior-macro";
-      #binding-cells = <0>;
-      bindings = <&kp RET>;
-    };
-  };
-
-  endpoint_sideband_behaviors {
-      auto-enable;
-      compatible = "zmk,kscan-sideband-behaviors";
-      kscan = <&kscan_sp3t_toggle>;
-
-      first_toggle_sideband: first_toggle_sideband {
-          column = <0>;
-          bindings = <&usb_conn>;
-      };
-
-      second_toggle_sideband: second_toggle_sideband {
-          column = <1>;
-          bindings = <&ble_zero>;
-      };
-
-      third_toggle_sideband: third_toggle_sideband {
-          column = <2>;
-          bindings = <&ble_one>;
-      };
-  };
-
   keymap {
     compatible = "zmk,keymap";
     default_layer {
