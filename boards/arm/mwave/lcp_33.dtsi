@@ -34,18 +34,6 @@
         };
     };
 
-    kscan_sp3t_toggle: kscan_sp3t_toggle {
-
-        wakeup-source;
-        compatible = "zmk,kscan-gpio-direct";
-        toggle-mode;
-
-        input-gpios
-            = <&gpio0 3 GPIO_ACTIVE_LOW>
-            , <&gpio0 2 GPIO_ACTIVE_LOW>
-            , <&gpio0 28 GPIO_ACTIVE_LOW>
-            ;
-    };
 };
 
 &adc {
@@ -105,19 +93,12 @@ zephyr_udc0: &usbd {
         #address-cells = <1>;
         #size-cells = <1>;
 
-        sd_partition: partition@0 {
-            reg = <0x00000000 0x0001000>;
-        };
-        code_partition: partition@1000 {
-            reg = <0x00001000 0x0006b000>;
+        code_partition: partition@0 {
+            reg = <0x00000000 0x0006c000>;
         };
 
         storage_partition: partition@6c000 {
             reg = <0x0006c000 0x00008000>;
-        };
-
-        boot_partition: partition@74000 {
-            reg = <0x00074000 0x0000c000>;
         };
     };
 };
