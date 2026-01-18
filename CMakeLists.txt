@@ -52,7 +52,6 @@ if (CONFIG_ZMK_STP_INDICATORS)
     else()
         zephyr_library_sources(src/mwave_indicators.c)
     endif()
-    zephyr_library_sources(src/behaviors/behavior_stp_indicators.c)
 endif()
 
 add_subdirectory(drivers)
