@@ -3,14 +3,12 @@
 
 config BOARD
     default "mwave_33" if BOARD_MWAVE_33
-    default "mwavetest_33" if BOARD_MWAVETEST_33
-    default "mwavetest_20" if BOARD_MWAVETEST_20
     default "mwavenumpad" if BOARD_MWAVENUMPAD
     
 config ZMK_KEYBOARD_NAME
     default "mWave"
 
-if BOARD_MWAVE_33 || BOARD_MWAVETEST_33 || BOARD_MWAVETEST_20 || BOARD_MWAVENUMPAD
+if BOARD_MWAVE_33 || BOARD_MWAVENUMPAD
 
 if USB
 
@@ -22,16 +20,4 @@ config USB_DEVICE_STACK
 
 endif # USB
 
-config BT_CTLR
-    default BT
-
-if ZMK_STUDIO
-config ZMK_STUDIO_RPC_RX_BUF_SIZE
-    default 128
-
-config ZMK_STUDIO_RPC_TX_BUF_SIZE
-    default 256
-
-endif
-
-endif # BOARD_MWAVE_33 || BOARD_MWAVETEST_33 || BOARD_MWAVETEST_20 || BOARD_MWAVENUMPAD
+endif # BOARD_MWAVE_33 || BOARD_MWAVENUMPAD

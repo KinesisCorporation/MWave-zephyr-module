@@ -19,14 +19,12 @@
 
 #include <zmk/activity.h>
 #include <zmk/usb.h>
-#include <zmk/ble.h>
 #include <zmk/battery.h>
 #include <zmk/hid_indicators.h>
 #include <zmk/keymap.h>
 #include <zmk/event_manager.h>
 #include <zmk/events/activity_state_changed.h>
 #include <zmk/events/endpoint_changed.h>
-#include <zmk/events/ble_active_profile_changed.h>
 #include <zmk/events/hid_indicators_changed.h>
 #include <zmk/events/layer_state_changed.h>
 #include <zmk/events/battery_state_changed.h>
@@ -77,11 +75,6 @@ struct zmk_led_hsb {
         b : (((hex)&0x0000FF) >> 0)                                     \
     })
 
-struct zmk_mwave_ble {
-    uint8_t prof;
-    bool open;
-    bool connected;
-};
 
 static struct zmk_led_hsb color0; // LED0
 static struct zmk_led_hsb color1; // LED1
@@ -90,7 +83,6 @@ static const struct led_rgb LAYER_COLORS[8] = {
     LED_RGB(0x000000), LED_RGB(0xFFFFFF), LED_RGB(0x0000FF), LED_RGB(0x00FF00),
     LED_RGB(0xFF0000), LED_RGB(0xFF00FF), LED_RGB(0x00FFFF), LED_RGB(0xFFFF00)};
 
-static struct zmk_mwave_ble ble_status;
 static uint8_t layer;
 static bool caps;
 static bool num;
@@ -216,10 +208,7 @@ static void zmk_mwave_indicators_bluetooth(struct k_work *work) {
     // Set LED to blue if profile one, set sat to 0 if profile 0 (white)
     LOG_DBG("BLE PROFILE: %d", ble_status.prof);
     color0.h = 240;
-    if (ble_status.prof) {
-        color0.s = 100;
-    } else
-        color0.s = 0;
+    color0.s = 100;
     // If in USB HID mode
     if (usb) {
         LOG_DBG("USB MODE");
@@ -231,29 +220,12 @@ static void zmk_mwave_indicators_bluetooth(struct k_work *work) {
         color0.h = 120;
         color0.s = 100;
         color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
-    } else if (ble_status.open) {
-        LOG_DBG("BLE PROF OPEN");
-        // If profile is open (unpaired) start fast blink timer and ensure LED turns on
-        color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
-        k_timer_stop(&slow_blink_timer);
-        k_timer_stop(&connected_timeout_timer);
-        k_timer_start(&fast_blink_timer, K_NO_WAIT, K_MSEC(200));
-    } else if (!ble_status.connected) {
-        LOG_DBG("BLE PROF NOT CONN");
-        // If profile paired but not connected start slow blink timer and ensure LED on
-        color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
-        k_timer_stop(&fast_blink_timer);
-        k_timer_stop(&connected_timeout_timer);
-        k_timer_start(&slow_blink_timer, K_NO_WAIT, K_MSEC(750));
     } else {
-        LOG_DBG("BLE PROF CONN");
-        // If connected start the 3 second timeout to turn LED off
+        LOG_DBG("BLE PROF OPEN");
+        // Secure version has no BLE, flash blue to indicate to user keyboard is on
         color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
-        k_timer_stop(&slow_blink_timer);
-        k_timer_stop(&fast_blink_timer);
-        if(!zmk_usb_is_powered())
-            k_timer_start(&connected_timeout_timer, K_SECONDS(3), K_NO_WAIT);
-    }
+        k_timer_start(&fast_blink_timer, K_NO_WAIT, K_MSEC(200));
+    } 
     // Convert HSB to RGB and update the LEDs
 
     pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?1:0] = hsb_to_rgb(color0);
@@ -400,9 +372,6 @@ k_timer_start(&battery_timeout_timer, K_SECONDS(5), K_NO_WAIT);
 K_TIMER_DEFINE(battery_low_timer, zmk_mwave_indicators_battery_low_timer_handler, NULL);
 
 void zmk_mwave_indicators_resample(){
-    ble_status.connected = zmk_ble_active_profile_is_connected();
-    ble_status.open = zmk_ble_active_profile_is_open();
-    ble_status.prof = zmk_ble_active_profile_index();
     usb = (zmk_endpoints_preferred().transport==ZMK_TRANSPORT_USB);
 
     caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
@@ -441,11 +410,6 @@ static int zmk_mwave_indicators_init(void) {
         b : CONFIG_ZMK_STP_INDICATORS_BRT_MAX,
     };
 
-    ble_status = (struct zmk_mwave_ble){
-        prof : zmk_ble_active_profile_index(),
-        open : zmk_ble_active_profile_is_open(),
-        connected : zmk_ble_active_profile_is_connected()
-    };
     caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
     num = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
     usb = false;
@@ -530,23 +494,6 @@ static int mwave_indicators_event_listener(const zmk_event_t *eh) {
         return 0;
     }
 
-    // If BLE state changed
-    if (as_zmk_ble_active_profile_changed(eh)) {
-        LOG_DBG("BLE CHANGE LOGGED");
-        // Get BLE information, Caps state and set local flags
-        ble_status.connected = zmk_ble_active_profile_is_connected();
-        ble_status.open = zmk_ble_active_profile_is_open();
-        ble_status.prof = zmk_ble_active_profile_index();
-        caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
-        // Update LEDs
-        if (!battery) {
-            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
-            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
-        }
-        return 0;
-    }
-
     if (as_zmk_hid_indicators_changed(eh)) {
         // Get new HID state, set local flags
         caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
@@ -593,7 +540,6 @@ ZMK_LISTENER(mwave_indicators, mwave_indicators_event_listener);
 
 ZMK_SUBSCRIPTION(mwave_indicators, zmk_activity_state_changed);
 ZMK_SUBSCRIPTION(mwave_indicators, zmk_endpoint_changed);
-ZMK_SUBSCRIPTION(mwave_indicators, zmk_ble_active_profile_changed);
 ZMK_SUBSCRIPTION(mwave_indicators, zmk_hid_indicators_changed);
 ZMK_SUBSCRIPTION(mwave_indicators, zmk_battery_state_changed);
 ZMK_SUBSCRIPTION(mwave_indicators, zmk_layer_state_changed);
