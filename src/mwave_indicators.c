@@ -206,7 +206,6 @@ K_TIMER_DEFINE(connected_timeout_timer, zmk_mwave_indicators_blink_handler, NULL
 
 static void zmk_mwave_indicators_bluetooth(struct k_work *work) {
     // Set LED to blue if profile one, set sat to 0 if profile 0 (white)
-    LOG_DBG("BLE PROFILE: %d", ble_status.prof);
     color0.h = 240;
     color0.s = 100;
     // If in USB HID mode
