@@ -9,7 +9,7 @@ manifest:
   projects:
     - name: zmk
       remote: refil
-      revision: disable-endpoint-fallback
+      revision: main
       import: app/west.yml
     - name: gpio-rgb-zephyr-module
       remote: refil
