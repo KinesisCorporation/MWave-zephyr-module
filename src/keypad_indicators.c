@@ -61,7 +61,6 @@ static struct zmk_led_hsb color1; // LED1
 
 static bool numl;
 static bool usb;
-static bool battery;
 
 static bool on;
 
@@ -179,12 +178,8 @@ K_TIMER_DEFINE(connected_timeout_timer, zmk_stp_indicators_blink_handler, NULL);
 
 static void zmk_stp_indicators_bluetooth(struct k_work *work) {
     // Set LED to blue if profile one, set sat to 0 if profile 0 (white)
-    LOG_DBG("BLE PROFILE: %d", ble_status.prof);
     color0.h = 240;
-    if (ble_status.prof) {
-        color0.s = 100;
-    } else
-        color0.s = 0;
+    color0.s = 100;
     // If in USB HID mode
     if (usb) {
         LOG_DBG("USB MODE");
@@ -196,29 +191,12 @@ static void zmk_stp_indicators_bluetooth(struct k_work *work) {
         color0.h = 120;
         color0.s = 100;
         color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
-    } else if (ble_status.open) {
-        LOG_DBG("BLE PROF OPEN");
-        // If profile is open (unpaired) start fast blink timer and ensure LED turns on
-        color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
-        k_timer_stop(&slow_blink_timer);
-        k_timer_stop(&connected_timeout_timer);
-        k_timer_start(&fast_blink_timer, K_NO_WAIT, K_MSEC(200));
-    } else if (!ble_status.connected) {
-        LOG_DBG("BLE PROF NOT CONN");
-        // If profile paired but not connected start slow blink timer and ensure LED on
-        color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
-        k_timer_stop(&fast_blink_timer);
-        k_timer_stop(&connected_timeout_timer);
-        k_timer_start(&slow_blink_timer, K_NO_WAIT, K_MSEC(750));
     } else {
-        LOG_DBG("BLE PROF CONN");
-        // If connected start the 3 second timeout to turn LED off
+        LOG_DBG("BLE PROF OPEN");
+        // Secure version has no BLE, flash blue to indicate to user keyboard is on
         color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
-        k_timer_stop(&slow_blink_timer);
-        k_timer_stop(&fast_blink_timer);
-        if(!zmk_usb_is_powered())
-            k_timer_start(&connected_timeout_timer, K_SECONDS(3), K_NO_WAIT);
-    }
+        k_timer_start(&fast_blink_timer, K_NO_WAIT, K_MSEC(200));
+    } 
     // Convert HSB to RGB and update the LEDs
 
     pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?1:0] = hsb_to_rgb(color0);
@@ -249,64 +227,7 @@ static void zmk_stp_indicators_numl(struct k_work *work) {
 K_WORK_DEFINE(bluetooth_ind_work, zmk_stp_indicators_bluetooth);
 K_WORK_DEFINE(numl_ind_work, zmk_stp_indicators_numl);
 
-static void zmk_stp_indicators_battery_blink_work(struct k_work *work) {
-    LOG_DBG("Blink work triggered");
-    // If LED on turn off and vice cersa
-    color0.h = 0;
-    color0.s = 100;
-    color1.h = 0;
-    color1.s = 100;
-    if (color0.b){
-        color0.b = 0;
-        color1.b = 0;
-    }
-    else{
-        color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
-        color1.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
-        }
-    // Convert HSB to RGB and update LEDs
-    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?1:0] = hsb_to_rgb(color0);
-    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1] = hsb_to_rgb(color1);
-    int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
-    if (err < 0) {
-        LOG_ERR("Failed to update the RGB strip (%d)", err);
-    }
-}
-
-K_WORK_DEFINE(battery_blink_work, zmk_stp_indicators_battery_blink_work);
-
-static void zmk_stp_indicators_battery_blink_handler(struct k_timer *timer) {
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &battery_blink_work);
-}
-
-// Define timers for blinking and led timeout
-K_TIMER_DEFINE(battery_blink_timer, zmk_stp_indicators_battery_blink_handler, NULL);
-
-static void zmk_stp_indicators_battery_timer_handler(struct k_timer *timer) {
-    //do some battery stuf here  
-    battery = false;
-    k_timer_stop(&battery_blink_timer); 
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
-}
-
-// Define timers for blinking and led timeout
-K_TIMER_DEFINE(battery_timeout_timer, zmk_stp_indicators_battery_timer_handler, NULL);
-
-static void zmk_stp_indicators_battery_low_timer_handler(struct k_timer *timer) {
-    //do some battery stuf here
-    battery = true;
-    k_timer_start(&battery_blink_timer, K_NO_WAIT, K_MSEC(750));
-    k_timer_start(&battery_timeout_timer, K_SECONDS(5), K_NO_WAIT);
-}
-
-// Define timers for blinking and led timeout
-K_TIMER_DEFINE(battery_low_timer, zmk_stp_indicators_battery_low_timer_handler, NULL);
-
 void zmk_stp_indicators_resample(){
-    ble_status.connected = zmk_ble_active_profile_is_connected();
-    ble_status.open = zmk_ble_active_profile_is_open();
-    ble_status.prof = zmk_ble_active_profile_index();
     usb = (zmk_endpoints_preferred().transport==ZMK_TRANSPORT_USB);
 
     numl = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
@@ -320,26 +241,6 @@ static void zmk_stp_indicators_resample_work(struct k_work *work) {
 }
 
 K_WORK_DELAYABLE_DEFINE(resample_work, zmk_stp_indicators_resample_work);
-
-int zmk_stp_indicators_enable_batt() {
-    // Stop blinking timers
-    k_timer_stop(&slow_blink_timer);
-    k_timer_stop(&fast_blink_timer);
-    k_timer_stop(&connected_timeout_timer);
-    // Set battery flag to prevent other things overriding
-    battery = true;
-    // Submit battery work to queue
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &battery_ind_work);
-    return 0;
-}
-int zmk_stp_indicators_disable_batt() {
-    // Unset battery flag to allow other events to override
-    battery = false;
-    // Submit works to update both LEDs
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
-    return 0;
-}
 
 static int zmk_stp_indicators_init(void) {
 
@@ -359,14 +260,8 @@ static int zmk_stp_indicators_init(void) {
         b : CONFIG_ZMK_STP_INDICATORS_BRT_MAX,
     };
 
-    ble_status = (struct zmk_stp_ble){
-        prof : zmk_ble_active_profile_index(),
-        open : zmk_ble_active_profile_is_open(),
-        connected : zmk_ble_active_profile_is_connected()
-    };
     numl = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
     usb = false;
-    battery = false;
 
     on = true;
 
@@ -437,26 +332,8 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
         numl = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
         //  Update LEDs
         //
-        if (!battery) {
-            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
-        }
-        return 0;
-    }
-
-    // If BLE state changed
-    if (as_zmk_ble_active_profile_changed(eh)) {
-        LOG_DBG("BLE CHANGE LOGGED");
-        // Get BLE information, Numl state and set local flags
-        ble_status.connected = zmk_ble_active_profile_is_connected();
-        ble_status.open = zmk_ble_active_profile_is_open();
-        ble_status.prof = zmk_ble_active_profile_index();
-        numl = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
-        // Update LEDs
-        if (!battery) {
-            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
-        }
+        k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+        k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
         return 0;
     }
 
@@ -464,28 +341,10 @@ static int stp_indicators_event_listener(const zmk_event_t *eh) {
         // Get new HID state, set local flags
         numl = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
         LOG_DBG("INDICATOR CHANGED, num %d", numl);
-        if (!battery) {
-            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
+        k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &numl_ind_work);
             // k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
-        }
         return 0;
     }
-    if (as_zmk_battery_state_changed(eh)) {
-        // Get battery state, if low blinky blinky
-
-        LOG_DBG("Battery event");
-        if(zmk_battery_state_of_charge() < CONFIG_ZMK_STP_INDICATORS_BATTERY_THRESHOLD) {
-            LOG_DBG("LOW BATTERY WARNING");
-            battery=true; 
-            k_timer_stop(&slow_blink_timer);
-            k_timer_stop(&fast_blink_timer);
-            k_timer_stop(&connected_timeout_timer);
-            k_timer_start(&battery_low_timer, K_NO_WAIT, K_MINUTES(1));
-
-        }
-        return 0;
-    }
-
 
     return -ENOTSUP;
 }
@@ -494,8 +353,6 @@ ZMK_LISTENER(stp_indicators, stp_indicators_event_listener);
 
 ZMK_SUBSCRIPTION(stp_indicators, zmk_activity_state_changed);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_endpoint_changed);
-ZMK_SUBSCRIPTION(stp_indicators, zmk_ble_active_profile_changed);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_hid_indicators_changed);
-ZMK_SUBSCRIPTION(stp_indicators, zmk_battery_state_changed);
 
 SYS_INIT(zmk_stp_indicators_init, POST_KERNEL, CONFIG_APPLICATION_INIT_PRIORITY);
