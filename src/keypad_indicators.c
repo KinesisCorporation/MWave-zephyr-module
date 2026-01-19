@@ -18,15 +18,11 @@
 
 #include <zmk/activity.h>
 #include <zmk/usb.h>
-#include <zmk/ble.h>
-#include <zmk/battery.h>
 #include <zmk/hid_indicators.h>
 #include <zmk/event_manager.h>
 #include <zmk/events/activity_state_changed.h>
 #include <zmk/events/endpoint_changed.h>
-#include <zmk/events/ble_active_profile_changed.h>
 #include <zmk/events/hid_indicators_changed.h>
-#include <zmk/events/battery_state_changed.h>
 #include <zmk/endpoints.h>
 #include <zmk/indicators.h>
 
@@ -59,16 +55,10 @@ struct zmk_led_hsb {
 #define SAT_MAX 100
 #define BRT_MAX 100
 
-struct zmk_stp_ble {
-    uint8_t prof;
-    bool open;
-    bool connected;
-};
 
 static struct zmk_led_hsb color0; // LED0
 static struct zmk_led_hsb color1; // LED1
 
-static struct zmk_stp_ble ble_status;
 static bool numl;
 static bool usb;
 static bool battery;
