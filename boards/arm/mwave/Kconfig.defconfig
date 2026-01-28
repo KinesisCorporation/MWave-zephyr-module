@@ -46,13 +46,13 @@ choice BT_CTLR_TX_PWR
 endchoice
 
 config BT_DIS_MANUF
-    default "Kinesis Corporation"
+    select "Kinesis Corporation"
 
 config BT_DIS_PNP_VID
-    default 0x29EA
+    select 0x29EA
 
 config BT_DIS_PNP_PID
-    default 0x1001
+    select 0x1001
 
 config BT_MAX_CONN
     default 2
