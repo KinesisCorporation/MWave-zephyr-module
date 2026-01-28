@@ -41,7 +41,7 @@ if ZMK_BLE
 config ZMK_BLE_EXPERIMENTAL_CONN
     default y
 
-config BT_CTLR_TX_PWR
+choice BT_CTLR_TX_PWR
     default BT_CTLR_TX_PWR_PLUS_8
 
 config BT_DIS_MANUF
