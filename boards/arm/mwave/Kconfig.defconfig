@@ -37,7 +37,6 @@ config ZMK_BLE
 
 if ZMK_BLE
 
-
 config ZMK_BLE_EXPERIMENTAL_CONN
     default y
 
@@ -59,6 +58,6 @@ config BT_MAX_CONN
 config BT_MAX_PAIRED
     default 2
 
-endif
+endif # ZMK_BLE
 
 endif # BOARD_MWAVE_33 || BOARD_MWAVENUMPAD
