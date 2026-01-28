@@ -8,6 +8,9 @@ config BOARD
 config ZMK_KEYBOARD_NAME
     default "mWave"
 
+config ZMK_BLE
+    default y
+
 if BOARD_MWAVE_33 || BOARD_MWAVENUMPAD
 
 if USB
@@ -24,6 +27,7 @@ config BT_CTLR
     default BT
 
 if ZMK_STUDIO
+
 config ZMK_STUDIO_RPC_RX_BUF_SIZE
     default 128
 
@@ -31,9 +35,6 @@ config ZMK_STUDIO_RPC_TX_BUF_SIZE
     default 256
 
 endif
-
-config ZMK_BLE
-    default y
 
 if ZMK_BLE
 
