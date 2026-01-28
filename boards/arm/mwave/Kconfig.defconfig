@@ -3,14 +3,12 @@
 
 config BOARD
     default "mwave_33" if BOARD_MWAVE_33
-    default "mwavetest_33" if BOARD_MWAVETEST_33
-    default "mwavetest_20" if BOARD_MWAVETEST_20
     default "mwavenumpad" if BOARD_MWAVENUMPAD
     
 config ZMK_KEYBOARD_NAME
     default "mWave"
 
-if BOARD_MWAVE_33 || BOARD_MWAVETEST_33 || BOARD_MWAVETEST_20 || BOARD_MWAVENUMPAD
+if BOARD_MWAVE_33 || BOARD_MWAVENUMPAD
 
 if USB
 
@@ -34,4 +32,33 @@ config ZMK_STUDIO_RPC_TX_BUF_SIZE
 
 endif
 
-endif # BOARD_MWAVE_33 || BOARD_MWAVETEST_33 || BOARD_MWAVETEST_20 || BOARD_MWAVENUMPAD
+config ZMK_BLE
+    default y
+
+if ZMK_BLE
+
+
+config ZMK_BLE_EXPERIMENTAL_CONN
+    default y
+
+config BT_CTLR_TX_PWR_PLUS_8
+    default y
+
+config BT_DIS_MANUF
+    default "Kinesis Corporation"
+
+config BT_DIS_PNP_VID
+    default 0x29EA
+
+config BT_DIS_PNP_PID
+    default 0x1001
+
+config BT_MAX_CONN
+    default 2
+
+config BT_MAX_PAIRED
+    default 2
+
+endif
+
+endif # BOARD_MWAVE_33 || BOARD_MWAVENUMPAD

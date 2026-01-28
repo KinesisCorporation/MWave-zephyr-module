@@ -6,15 +6,7 @@
 config BOARD_MWAVE_33
     bool "mwave_33"
     depends on SOC_NRF52833_QIAA
-
-config BOARD_MWAVETEST_33
-    bool "mwavetest_33"
-    depends on SOC_NRF52833_QIAA
-
-config BOARD_MWAVETEST_20
-    bool "mwavetest_20"
-    depends on SOC_NRF52820_QDAA
-
+    
 config BOARD_MWAVENUMPAD
     bool "mwavenumpad"
     depends on SOC_NRF52833_QIAA

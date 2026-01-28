@@ -1,0 +1,411 @@
+/*
+ * Copyright (c) 2024 The ZMK Contributors
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <zephyr/device.h>
+#include <zephyr/init.h>
+#include <zephyr/kernel.h>
+#include <zephyr/settings/settings.h>
+
+#include <math.h>
+#include <stdlib.h>
+
+#include <zephyr/logging/log.h>
+
+#include <zephyr/drivers/led_strip.h>
+#include <zephyr/drivers/led.h>
+
+#include <zmk/activity.h>
+#include <zmk/usb.h>
+#include <zmk/hid_indicators.h>
+#include <zmk/keymap.h>
+#include <zmk/event_manager.h>
+#include <zmk/events/activity_state_changed.h>
+#include <zmk/events/endpoint_changed.h>
+#include <zmk/events/hid_indicators_changed.h>
+#include <zmk/events/layer_state_changed.h>
+#include <zmk/events/usb_conn_state_changed.h>
+#include <zmk/endpoints.h>
+#include <zmk/indicators.h>
+
+#include <zmk/workqueue.h>
+
+LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
+
+#if !DT_HAS_CHOSEN(zmk_indicators)
+
+#error "A zmk,indicators chosen node must be declared"
+
+#endif
+
+#if !DT_HAS_CHOSEN(zmk_caps_led)
+
+#error "A zmk,caps-led chosen node must be declared"
+
+#endif
+
+#define ZMK_LED_NUMLOCK_BIT BIT(0)
+#define ZMK_LED_CAPSLOCK_BIT BIT(1)
+#define ZMK_LED_SCROLLLOCK_BIT BIT(2)
+#define ZMK_LED_COMPOSE_BIT BIT(3)
+#define ZMK_LED_KANA_BIT BIT(4)
+
+struct zmk_led_hsb {
+    uint16_t h;
+    uint8_t s;
+    uint8_t b;
+};
+
+#define STRIP_CHOSEN DT_CHOSEN(zmk_indicators)
+#define STRIP_NUM_PIXELS DT_PROP(STRIP_CHOSEN, chain_length)
+#define CAPS_LED DT_CHOSEN(zmk_caps_led)
+
+#define HUE_MAX 360
+#define SAT_MAX 100
+#define BRT_MAX 100
+
+#define LED_RGB(hex)                                                                               \
+    ((struct led_rgb){                                                                             \
+        r : (((hex)&0xFF0000) >> 16),                                   \
+        g : (((hex)&0x00FF00) >> 8),                                    \
+        b : (((hex)&0x0000FF) >> 0)                                     \
+    })
+
+
+static struct zmk_led_hsb color0; // LED0
+static struct zmk_led_hsb color1; // LED1
+
+static const struct led_rgb LAYER_COLORS[8] = {
+    LED_RGB(0x000000), LED_RGB(0xFFFFFF), LED_RGB(0x0000FF), LED_RGB(0x00FF00),
+    LED_RGB(0xFF0000), LED_RGB(0xFF00FF), LED_RGB(0x00FFFF), LED_RGB(0xFFFF00)};
+
+static uint8_t layer;
+static bool caps;
+static bool num;
+static bool usb;
+
+static bool on;
+
+static const struct device *led_strip;
+static const struct device *caps_led;
+
+static struct led_rgb pixels[STRIP_NUM_PIXELS];
+
+static struct led_rgb hsb_to_rgb(struct zmk_led_hsb hsb) {
+    float r, g, b;
+
+    uint8_t i = hsb.h / 60;
+    float v = hsb.b / ((float)BRT_MAX);
+    float s = hsb.s / ((float)SAT_MAX);
+    float f = hsb.h / ((float)HUE_MAX) * 6 - i;
+    float p = v * (1 - s);
+    float q = v * (1 - f * s);
+    float t = v * (1 - (1 - f) * s);
+
+    switch (i % 6) {
+    case 0:
+        r = v;
+        g = t;
+        b = p;
+        break;
+    case 1:
+        r = q;
+        g = v;
+        b = p;
+        break;
+    case 2:
+        r = p;
+        g = v;
+        b = t;
+        break;
+    case 3:
+        r = p;
+        g = q;
+        b = v;
+        break;
+    case 4:
+        r = t;
+        g = p;
+        b = v;
+        break;
+    case 5:
+        r = v;
+        g = p;
+        b = q;
+        break;
+    }
+
+    struct led_rgb rgb = {r : r * 255, g : g * 255, b : b * 255};
+
+    return rgb;
+}
+
+static void zmk_mwave_indicators_blink_work(struct k_work *work) {
+    LOG_DBG("Blink work triggered");
+    // If LED on turn off and vice cersa
+    if (color0.b)
+        color0.b = 0;
+    else
+        color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
+    // Convert HSB to RGB and update LEDs
+    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?1:0] = hsb_to_rgb(color0);
+    int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
+    if (err < 0) {
+        LOG_ERR("Failed to update the RGB strip (%d)", err);
+    }
+}
+
+K_WORK_DEFINE(blink_work, zmk_mwave_indicators_blink_work);
+
+static void zmk_mwave_indicators_blink_handler(struct k_timer *timer) {
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &blink_work);
+}
+
+// Define timers for blinking and led timeout
+K_TIMER_DEFINE(fast_blink_timer, zmk_mwave_indicators_blink_handler, NULL);
+K_TIMER_DEFINE(slow_blink_timer, zmk_mwave_indicators_blink_handler, NULL);
+K_TIMER_DEFINE(connected_timeout_timer, zmk_mwave_indicators_blink_handler, NULL);
+
+static void zmk_mwave_indicators_bluetooth(struct k_work *work) {
+    // Set LED to blue if profile one, set sat to 0 if profile 0 (white)
+    color0.h = 240;
+    color0.s = 100;
+    // If in USB HID mode
+    if (usb) {
+        LOG_DBG("USB MODE");
+        // Stop all timers
+        k_timer_stop(&slow_blink_timer);
+        k_timer_stop(&fast_blink_timer);
+        k_timer_start(&connected_timeout_timer, K_SECONDS(3), K_NO_WAIT);
+        // Set LED to green
+        color0.h = 120;
+        color0.s = 100;
+        color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
+    } else {
+        LOG_DBG("BLE PROF OPEN");
+        // Secure version has no BLE, flash blue to indicate to user keyboard is on
+        color0.b = CONFIG_ZMK_STP_INDICATORS_BRT_MAX;
+        k_timer_start(&fast_blink_timer, K_NO_WAIT, K_MSEC(200));
+    } 
+    // Convert HSB to RGB and update the LEDs
+
+    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?1:0] = hsb_to_rgb(color0);
+    LOG_DBG("Setting LED:%d", IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?1:0);
+    int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
+    if (err < 0) {
+        LOG_ERR("Failed to update the RGB strip (%d)", err);
+    }
+}
+
+static void zmk_mwave_indicators_layer_blink_work(struct k_work *work) {
+    LOG_DBG("Blink work triggered");
+    // Do cursed blinkhacking
+    //    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1] =
+    //    (pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1].r ||
+    //     pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1].b ||
+    //     pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS) ? 0 : 1].g)
+    //        ? LAYER_COLORS[layer]
+    //        : LED_RGB(0x000000);
+    if((pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1].r != 0) || (pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1].g != 0) || (pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1].b != 0) )
+        pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1] = LED_RGB(0x000000);
+    else
+        pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1] = LAYER_COLORS[layer];
+    int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
+    if (err < 0) {
+        LOG_ERR("Failed to update the RGB strip (%d)", err);
+    }
+}
+
+K_WORK_DEFINE(num_ind_work, zmk_mwave_indicators_layer_blink_work);
+
+static void zmk_mwave_indicators_num_blink_handler(struct k_timer *timer) {
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &num_ind_work);
+}
+
+// Define timers for blinking and led timeout
+K_TIMER_DEFINE(num_blink_timer, zmk_mwave_indicators_num_blink_handler, NULL);
+
+static void zmk_mwave_indicators_layer(struct k_work *work) {
+
+    if(!num && (layer!=0))
+        k_timer_start(&num_blink_timer, K_MSEC(750), K_MSEC(750));
+    else   
+        k_timer_stop(&num_blink_timer);
+        
+    pixels[IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1] = LAYER_COLORS[layer];
+    LOG_DBG("Setting LED:%d", IS_ENABLED(CONFIG_ZMK_STP_INDICATORS_SWITCH_LEDS)?0:1);
+    int err = led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
+    if (err < 0) {
+        LOG_ERR("Failed to update the RGB strip (%d)", err);
+    }
+}
+
+static void zmk_mwave_indicators_caps(struct k_work *work) {
+    int err = 0;
+    if (caps)
+        err = led_on(caps_led, 0);
+    else
+        err = led_off(caps_led, 0);
+    
+    if (err < 0) {
+        LOG_ERR("Failed to update the led (%d)", err);
+    }
+}
+
+// Define work to update LEDs
+K_WORK_DEFINE(bluetooth_ind_work, zmk_mwave_indicators_bluetooth);
+K_WORK_DEFINE(layer_ind_work, zmk_mwave_indicators_layer);
+K_WORK_DEFINE(caps_ind_work, zmk_mwave_indicators_caps);
+
+void zmk_mwave_indicators_resample(){
+    usb = (zmk_endpoints_preferred().transport==ZMK_TRANSPORT_USB);
+
+    caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
+    num = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
+}
+
+static void zmk_mwave_indicators_resample_work(struct k_work *work) {
+    LOG_DBG("Resample work triggered");
+    zmk_mwave_indicators_resample();
+}
+
+K_WORK_DELAYABLE_DEFINE(resample_work, zmk_mwave_indicators_resample_work);
+
+static int zmk_mwave_indicators_init(void) {
+
+    LOG_DBG("Initialising STP indicators");
+
+    led_strip = DEVICE_DT_GET(STRIP_CHOSEN);
+    caps_led = DEVICE_DT_GET(CAPS_LED);
+
+    if (!device_is_ready(caps_led)) {
+		LOG_ERR("Device %s is not ready", caps_led->name);
+	}
+
+    color0 = (struct zmk_led_hsb){
+        h : 240,
+        s : 100,
+        b : CONFIG_ZMK_STP_INDICATORS_BRT_MAX,
+    };
+
+    color1 = (struct zmk_led_hsb){
+        h : 240,
+        s : 0,
+        b : CONFIG_ZMK_STP_INDICATORS_BRT_MAX,
+    };
+
+    caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
+    num = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
+    usb = false;
+
+    on = true;
+
+    k_work_schedule(&resample_work, K_MSEC(500));
+
+    return 0;
+}
+
+int zmk_mwave_indicators_on() {
+    if (!led_strip)
+        return -ENODEV;
+
+    //k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
+
+    return 0;
+}
+
+static void zmk_mwave_indicators_off_handler(struct k_work *work) {
+    for (int i = 0; i < STRIP_NUM_PIXELS; i++) {
+        pixels[i] = (struct led_rgb){r : 0, g : 0, b : 0};
+    }
+
+    led_strip_update_rgb(led_strip, pixels, STRIP_NUM_PIXELS);
+    led_off(caps_led, 0);
+}
+
+K_WORK_DEFINE(underglow_off_work, zmk_mwave_indicators_off_handler);
+
+int zmk_mwave_indicators_off() {
+    if (!led_strip)
+        return -ENODEV;
+
+    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &underglow_off_work);
+    on = false;
+
+    return 0;
+}
+
+static int mwave_indicators_auto_state(bool *prev_state, bool new_state) {
+    if (on == new_state) {
+        return 0;
+    }
+    if (new_state) {
+        on = *prev_state;
+        *prev_state = false;
+        return zmk_mwave_indicators_on();
+    } else {
+        on = false;
+        *prev_state = true;
+        return zmk_usb_is_powered() ? 0 : zmk_mwave_indicators_off();
+    }
+}
+
+static int mwave_indicators_event_listener(const zmk_event_t *eh) {
+    // If going idle or waking up
+    if (as_zmk_activity_state_changed(eh)) {
+        static bool prev_state = false;
+        return mwave_indicators_auto_state(&prev_state,
+                                         zmk_activity_get_state() == ZMK_ACTIVITY_ACTIVE);
+    }
+    // If USB state changed
+    if (as_zmk_endpoint_changed(eh)) {
+
+        // Get new USB state, HID state and set local flags
+        usb = (zmk_endpoints_preferred().transport==ZMK_TRANSPORT_USB);
+        LOG_DBG("ENDPOINT EVENT: %d", usb);
+
+        caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
+        //  Update LEDs
+        //
+        k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+        k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
+        k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
+    
+        return 0;
+    }
+
+    if (as_zmk_hid_indicators_changed(eh)) {
+        // Get new HID state, set local flags
+        caps = (zmk_hid_indicators_get_current_profile() & ZMK_LED_CAPSLOCK_BIT);
+        num = (zmk_hid_indicators_get_current_profile() & ZMK_LED_NUMLOCK_BIT);
+        LOG_DBG("INDICATOR CHANGED, caps: %d, num %d", caps, num);
+        k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &caps_ind_work);
+        k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
+        // k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+        return 0;
+    }
+
+    if (as_zmk_layer_state_changed(eh)) {
+        // Get new layer state, set local flags
+        layer = zmk_keymap_highest_layer_active();
+        k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &layer_ind_work);
+        // k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bluetooth_ind_work);
+        return 0;
+    }
+    return -ENOTSUP;
+}
+
+ZMK_LISTENER(mwave_indicators, mwave_indicators_event_listener);
+
+ZMK_SUBSCRIPTION(mwave_indicators, zmk_activity_state_changed);
+ZMK_SUBSCRIPTION(mwave_indicators, zmk_endpoint_changed);
+ZMK_SUBSCRIPTION(mwave_indicators, zmk_hid_indicators_changed);
+ZMK_SUBSCRIPTION(mwave_indicators, zmk_layer_state_changed);
+
+SYS_INIT(zmk_mwave_indicators_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);

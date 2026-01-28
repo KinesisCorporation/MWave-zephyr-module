@@ -29,5 +29,8 @@ config ZMK_STP_INDICATORS_BATTERY_THRESHOLD
     int "When we decide battery low"
     range 0 100
     default 20
+
+config ZMK_STP_INDICATORS_HIGHSEC
+    bool "Enable high security mode LED indication"
     
 endif
